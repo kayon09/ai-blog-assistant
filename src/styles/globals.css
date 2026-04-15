@@ -1,0 +1,357 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@theme {
+  /* ── Serif Editorial Palette ── */
+  --color-ivory:        #FAFAF8;
+  --color-ivory-dark:   #F2F1EE;
+  --color-ivory-border: #E8E5DF;
+  --color-gold:         #B8860B;
+  --color-gold-light:   #D4A017;
+  --color-gold-muted:   #C9A227;
+  --color-ink:          #1A1A1A;
+  --color-ink-secondary:#3D3D3D;
+  --color-ink-muted:    #6B6B6B;
+  --color-ink-faint:    #9A9A9A;
+  --color-surface:      #FFFFFF;
+  --color-surface-warm: #FDFCF9;
+
+  /* ── Typography Families ── */
+  --font-serif:  'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  --font-sans:   'Source Sans 3', 'Helvetica Neue', 'Arial', sans-serif;
+  --font-mono:   'IBM Plex Mono', 'SF Mono', 'Consolas', monospace;
+
+  /* ── Fluid Type Scale ── */
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --text-h1:      clamp(2rem, 4vw, 3rem);
+  --text-h2:      clamp(1.5rem, 3vw, 2rem);
+  --text-h3:      clamp(1.125rem, 2vw, 1.375rem);
+  --text-body:    1rem;
+  --text-sm:      0.875rem;
+  --text-xs:      0.75rem;
+
+  /* ── Editorial Spacing ── */
+  --section-gap: clamp(4rem, 8vw, 7rem);
+
+  /* ── Transitions ── */
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════════ */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    border-color: var(--color-ivory-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: 400;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Headings use Playfair Display ── */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: var(--color-ink);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  h1 { font-size: var(--text-h1); }
+  h2 { font-size: var(--text-h2); }
+  h3 { font-size: var(--text-h3); font-weight: 600; }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+
+  /* ── Horizontal rules become refined editorial lines ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-ivory-border);
+    margin: 0;
+  }
+
+  /* ── Selection ── */
+  ::selection {
+    background-color: #B8860B22;
+    color: var(--color-ink);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Section Label (rule-flanked small caps) ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-gold);
+  }
+
+  .section-label::before,
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-gold);
+    opacity: 0.35;
+    max-width: 3rem;
+  }
+
+  /* inline variant — no rules */
+  .section-label-inline {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-gold);
+  }
+
+  /* ── Editorial Divider ── */
+  .rule-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-ivory-border) 20%,
+      var(--color-ivory-border) 80%,
+      transparent
+    );
+  }
+
+  .rule-divider-gold {
+    width: 2.5rem;
+    height: 2px;
+    background-color: var(--color-gold);
+  }
+
+  /* ── Navigation ── */
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink-muted);
+    transition: color var(--transition-base);
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--color-gold);
+    border-bottom-color: var(--color-gold);
+  }
+
+  /* Dashboard 顶部导航链接（无下边框装饰，更简洁） */
+  .nav-link-dashboard {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-ink-faint);
+    transition: color var(--transition-base);
+  }
+
+  .nav-link-dashboard:hover {
+    color: var(--color-gold);
+  }
+
+  /* ── Primary Button ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-ink);
+    color: var(--color-ivory);
+    padding: 0.75rem 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    border: 1px solid var(--color-ink);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-surface);
+  }
+
+  /* ── Ghost Button ── */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    color: var(--color-ink);
+    padding: 0.75rem 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    border: 1px solid var(--color-ivory-border);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  /* ── Feature Card ── */
+  .feature-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-ivory-border);
+    padding: 2rem;
+    transition: all var(--transition-base);
+    position: relative;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 0;
+    background-color: var(--color-gold);
+    transition: height 250ms ease;
+  }
+
+  .feature-card:hover {
+    border-color: var(--color-gold);
+    box-shadow: 0 4px 24px rgba(184, 134, 11, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .feature-card:hover::before {
+    height: 100%;
+  }
+
+  /* ── Pricing Card ── */
+  .pricing-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-ivory-border);
+    padding: 2.5rem;
+    transition: all var(--transition-base);
+  }
+
+  .pricing-card-featured {
+    background-color: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-ivory);
+  }
+
+  /* ── Testimonial ── */
+  .testimonial-card {
+    background-color: var(--color-surface-warm);
+    border: 1px solid var(--color-ivory-border);
+    padding: 2rem;
+    transition: box-shadow var(--transition-base);
+  }
+
+  .testimonial-card:hover {
+    box-shadow: 0 4px 20px rgba(26, 26, 26, 0.06);
+  }
+
+  /* ── Input ── */
+  .input {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-ivory-border);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    width: 100%;
+    transition: border-color var(--transition-base);
+    outline: none;
+  }
+
+  .input:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.08);
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background-color: rgba(250, 250, 248, 0.92);
+    border-bottom: 1px solid var(--color-ivory-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* ── Pull Quote / Large stat ── */
+  .stat-number {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    color: var(--color-ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  /* ── Step Number ── */
+  .step-number {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--color-gold);
+    opacity: 0.25;
+    line-height: 1;
+  }
+
+  /* ── Gold underline for display headings ── */
+  .heading-underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .heading-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0.05em;
+    left: 0;
+    width: 100%;
+    height: 0.08em;
+    background-color: var(--color-gold);
+    opacity: 0.45;
+  }
+}
