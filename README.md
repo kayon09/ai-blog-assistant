@@ -178,6 +178,18 @@ create or replace function increment_token_used(p_clerk_id text, p_tokens intege
 returns void as $$
   update users set token_used = token_used + p_tokens where clerk_id = p_clerk_id;
 $$ language sql;
+
+-- 付费意向收集（正式支付接入前使用）
+create table upgrade_intents (
+  id             uuid primary key default gen_random_uuid(),
+  clerk_user_id  text,                          -- 登录用户的 Clerk ID，未登录为 null
+  plan           text not null,                  -- 'pro' | 'team'
+  email          text not null,
+  wechat         text,
+  note           text,
+  status         text not null default 'pending', -- 'pending' | 'contacted' | 'converted'
+  created_at     timestamptz not null default now()
+);
 ```
 
 </details>

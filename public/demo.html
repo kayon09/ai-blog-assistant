@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 写作助手 · 交互演示</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── 设计令牌 ── */
+  :root {
+    --ivory:        #FAFAF8;
+    --ivory-dark:   #F2F1EE;
+    --ivory-border: #E8E5DF;
+    --gold:         #B8860B;
+    --gold-light:   #D4A017;
+    --ink:          #1A1A1A;
+    --ink-2:        #3D3D3D;
+    --ink-3:        #6B6B6B;
+    --ink-4:        #9A9A9A;
+    --surface:      #FFFFFF;
+    --serif:        'Playfair Display', Georgia, serif;
+    --mono:         'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+    --sans:         'Inter', system-ui, sans-serif;
+    --radius:       0px;
+    --shadow:       0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* ── 顶部导航 ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,250,248,0.92);
+    border-bottom: 1px solid var(--ivory-border);
+    backdrop-filter: blur(12px);
+    padding: 0 2rem;
+    height: 3.75rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { display: flex; align-items: center; gap: .75rem; text-decoration: none; }
+  .logo-name {
+    font-family: var(--serif); font-weight: 700; font-size: 1.1rem;
+    color: var(--ink); letter-spacing: -.01em;
+  }
+  .logo-tag {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--gold); opacity: .7;
+  }
+  .badge {
+    font-family: var(--mono); font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-3);
+    background: var(--ivory-dark); border: 1px solid var(--ivory-border);
+    padding: .2rem .6rem;
+  }
+
+  /* ── 主体布局 ── */
+  .shell {
+    display: flex;
+    height: calc(100vh - 3.75rem);
+    overflow: hidden;
+  }
+
+  /* ── 左侧导航 ── */
+  .sidenav {
+    width: 15rem; flex-shrink: 0;
+    border-right: 1px solid var(--ivory-border);
+    background: #F6F5F2;
+    display: flex; flex-direction: column;
+    padding: 1.25rem 1rem;
+  }
+  .sidenav-label {
+    font-family: var(--mono); font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--ink-4); margin-bottom: 1rem;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .5rem .75rem; margin-bottom: .25rem;
+    border-left: 2px solid transparent;
+    font-size: .85rem; color: var(--ink-4);
+    transition: all .2s;
+    cursor: default;
+  }
+  .step-item.done  { color: var(--ink-3); }
+  .step-item.active {
+    border-color: var(--gold); background: var(--ivory);
+    color: var(--ink); font-weight: 500;
+  }
+  .step-num {
+    width: 1.25rem; height: 1.25rem; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: .65rem; font-weight: 700;
+    background: var(--ivory-border); color: var(--ink-4);
+    flex-shrink: 0; transition: all .2s;
+  }
+  .step-item.active .step-num { background: var(--gold); color: #fff; }
+  .step-item.done  .step-num  { background: var(--ink-3); color: #fff; }
+
+  /* 章节列表（写作阶段） */
+  .section-list { margin-top: 1.5rem; display: none; }
+  .section-list.visible { display: block; }
+  .section-list-label {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--ink-4); margin-bottom: .5rem;
+  }
+  .section-chip {
+    padding: .4rem .6rem; margin-bottom: .35rem;
+    border: 1px solid var(--ivory-border);
+    background: var(--ivory); font-size: .75rem;
+    color: var(--ink-3); transition: all .25s;
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .section-chip.writing { border-color: var(--gold); color: var(--gold); }
+  .section-chip.done    { border-color: #86efac; background: #f0fdf4; color: #166534; }
+  .chip-icon { font-size: .65rem; }
+
+  /* 配额栏 */
+  .quota-bar { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--ivory-border); }
+  .quota-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: .35rem;
+  }
+  .quota-label {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-4);
+  }
+  .quota-plan {
+    font-family: var(--mono); font-size: .65rem; color: var(--ink-3);
+  }
+  .quota-track {
+    height: 4px; background: var(--ivory-border); position: relative; overflow: hidden;
+  }
+  .quota-fill {
+    height: 100%; background: var(--gold); width: 0%;
+    transition: width 1.5s cubic-bezier(.4,0,.2,1);
+  }
+  .quota-nums {
+    display: flex; justify-content: space-between; margin-top: .3rem;
+    font-family: var(--mono); font-size: .6rem; color: var(--ink-4);
+  }
+
+  /* ── 主内容区 ── */
+  .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* 步骤进度条 */
+  .stepbar {
+    display: flex; border-bottom: 1px solid var(--ivory-border);
+    background: var(--surface); flex-shrink: 0;
+  }
+  .stepbar-item {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .75rem 1.25rem; font-family: var(--mono);
+    font-size: .65rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--ink-4); white-space: nowrap;
+  }
+  .stepbar-item.active {
+    color: var(--gold); border-bottom: 2px solid var(--gold);
+    background: var(--ivory);
+  }
+  .stepbar-item.done { color: var(--ink-3); }
+  .sb-num {
+    width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .6rem; font-weight: 700;
+    background: var(--ivory-border); color: var(--ink-4);
+    flex-shrink: 0;
+  }
+  .stepbar-item.active .sb-num { background: var(--gold); color: #fff; }
+  .stepbar-item.done  .sb-num  { background: var(--ink-3); color: #fff; font-size: .55rem; }
+
+  /* 内容区 */
+  .content-area {
+    flex: 1; overflow-y: auto; padding: 3rem 2.5rem;
+    background: var(--ivory);
+  }
+
+  /* ── 屏幕切换 ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── 通用元素 ── */
+  .page-eyebrow {
+    font-family: var(--mono); font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .16em; color: var(--gold); margin-bottom: .4rem;
+  }
+  .page-title {
+    font-family: var(--serif); font-size: 1.75rem; font-weight: 700;
+    color: var(--ink); letter-spacing: -.01em; margin-bottom: .75rem;
+  }
+  .gold-rule {
+    height: 1px; background: linear-gradient(90deg, var(--gold) 0%, transparent 60%);
+    margin-bottom: 1.75rem;
+  }
+
+  label.field-label {
+    display: block; font-family: var(--mono); font-size: .65rem;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3);
+    margin-bottom: .4rem;
+  }
+  input.field-input {
+    width: 100%; padding: .65rem .85rem;
+    border: 1px solid var(--ivory-border); background: var(--surface);
+    font-family: var(--sans); font-size: .9rem; color: var(--ink);
+    outline: none; transition: border .15s;
+    border-radius: var(--radius);
+  }
+  input.field-input:focus { border-color: var(--gold); }
+  input.field-input::placeholder { color: var(--ink-4); }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.25rem; background: var(--ink); color: var(--ivory);
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .1em; border: none; cursor: pointer;
+    transition: background .15s; border-radius: var(--radius);
+  }
+  .btn-primary:hover { background: var(--ink-2); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary.full { width: 100%; justify-content: center; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1rem; background: transparent; color: var(--ink-3);
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .1em; border: 1px solid var(--ivory-border); cursor: pointer;
+    transition: all .15s; border-radius: var(--radius);
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* loading spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; animation: spin .8s linear infinite; }
+
+  /* loading 打点 */
+  @keyframes blink { 0%,100%{opacity:.2} 50%{opacity:1} }
+  .dot1 { animation: blink 1.2s ease-in-out -.32s infinite; }
+  .dot2 { animation: blink 1.2s ease-in-out -.16s infinite; }
+  .dot3 { animation: blink 1.2s ease-in-out 0s    infinite; }
+
+  /* ── Step 1：主题输入 ── */
+  #screen-topic { max-width: 36rem; margin: 0 auto; }
+  .field-group { margin-bottom: 1.25rem; }
+
+  /* 合规警告 */
+  .moderation-warn {
+    display: none;
+    align-items: flex-start; gap: .5rem;
+    border: 1px solid #fca5a5; background: #fef2f2;
+    padding: .6rem .85rem; margin-bottom: 1rem;
+    font-size: .8rem; color: #b91c1c;
+  }
+  .moderation-warn.visible { display: flex; }
+
+  /* ── Step 2：标题选择 ── */
+  #screen-titles { max-width: 42rem; margin: 0 auto; }
+  .titles-grid { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.5rem; }
+  .title-card {
+    padding: .9rem 1.1rem; border: 1px solid var(--ivory-border);
+    background: var(--surface); cursor: pointer; transition: all .18s;
+    display: flex; align-items: flex-start; gap: .75rem;
+  }
+  .title-card:hover  { border-color: var(--gold); background: var(--ivory); }
+  .title-card.selected { border-color: var(--gold); background: rgba(184,134,11,.04); }
+  .title-radio {
+    width: .9rem; height: .9rem; border-radius: 50%;
+    border: 2px solid var(--ivory-border); flex-shrink: 0; margin-top: .15rem;
+    transition: all .15s;
+  }
+  .title-card.selected .title-radio {
+    border-color: var(--gold); background: var(--gold);
+    box-shadow: 0 0 0 2px rgba(184,134,11,.2);
+  }
+  .title-text { font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .title-reason {
+    font-size: .75rem; color: var(--ink-4); margin-top: .25rem;
+    font-family: var(--mono);
+  }
+  .titles-actions { display: flex; gap: .75rem; }
+
+  /* skeleton loader */
+  @keyframes shimmer {
+    0%   { background-position: -40rem 0; }
+    100% { background-position:  40rem 0; }
+  }
+  .skeleton {
+    height: 4.5rem; border: 1px solid var(--ivory-border);
+    background: linear-gradient(90deg,
+      var(--ivory-border) 25%, var(--ivory-dark) 37%, var(--ivory-border) 63%);
+    background-size: 80rem 100%;
+    animation: shimmer 1.4s ease infinite;
+    margin-bottom: .6rem;
+  }
+
+  /* ── Step 3：大纲 ── */
+  #screen-outline { max-width: 44rem; margin: 0 auto; }
+  .outline-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .outline-chosen {
+    font-family: var(--serif); font-size: 1.1rem; font-weight: 600;
+    color: var(--ink); flex: 1; margin-right: 1rem;
+  }
+  .outline-card {
+    border: 1px solid var(--ivory-border); background: var(--surface);
+    margin-bottom: .5rem; transition: border .15s;
+  }
+  .outline-card:hover { border-color: var(--gold); }
+  .outline-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem;
+  }
+  .outline-card-title {
+    font-size: .9rem; font-weight: 500; color: var(--ink); flex: 1;
+  }
+  .outline-drag {
+    font-family: var(--mono); font-size: .7rem; color: var(--ink-4);
+    cursor: grab; padding: 0 .25rem;
+  }
+  .outline-points {
+    padding: 0 1rem .75rem 1rem; display: flex; flex-direction: column; gap: .3rem;
+  }
+  .outline-point {
+    font-size: .8rem; color: var(--ink-3); display: flex; align-items: flex-start; gap: .4rem;
+  }
+  .outline-point::before { content: '·'; color: var(--gold); flex-shrink: 0; }
+  .outline-intro {
+    border: 1px solid var(--ivory-border); background: var(--ivory-dark);
+    padding: .6rem 1rem; margin-bottom: .5rem;
+    font-size: .82rem; color: var(--ink-3);
+  }
+  .outline-intro-label {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-4); margin-bottom: .25rem;
+  }
+
+  /* ── Step 4：写作 ── */
+  .writing-layout { display: flex; height: 100%; overflow: hidden; }
+  .writing-sections-panel {
+    width: 13rem; flex-shrink: 0; border-right: 1px solid var(--ivory-border);
+    overflow-y: auto; padding: .85rem;
+  }
+  .writing-panel-label {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-4); margin-bottom: .6rem;
+  }
+  .writing-sec-item {
+    border: 1px solid var(--ivory-border); padding: .5rem .65rem;
+    margin-bottom: .4rem; font-size: .75rem; transition: all .2s;
+  }
+  .writing-sec-item.running { border-color: var(--gold); background: rgba(184,134,11,.03); }
+  .writing-sec-item.done    { border-color: #86efac; background: #f0fdf4; }
+  .writing-sec-name { color: var(--ink); font-weight: 500; margin-bottom: .3rem; }
+  .writing-sec-agents { display: flex; gap: .5rem; font-family: var(--mono); font-size: .65rem; }
+  .agent-badge { display: flex; align-items: center; gap: .2rem; }
+  .agent-badge.idle    { color: var(--ink-4); }
+  .agent-badge.running { color: var(--gold); }
+  .agent-badge.done    { color: #16a34a; }
+
+  .writing-content-area {
+    flex: 1; overflow-y: auto; padding: 2rem 2.5rem;
+    background: var(--ivory); font-family: var(--serif);
+  }
+  .article-title-display {
+    font-family: var(--serif); font-size: 2rem; font-weight: 700;
+    color: var(--ink); margin-bottom: .5rem; line-height: 1.3;
+  }
+  .article-intro {
+    color: var(--ink-3); line-height: 1.85; margin-bottom: 2rem; font-size: .95rem;
+  }
+  .article-section { margin-bottom: 2rem; }
+  .article-section-title {
+    font-family: var(--serif); font-size: 1.2rem; font-weight: 600;
+    color: var(--ink); margin-bottom: .85rem;
+  }
+  .article-section-body {
+    color: var(--ink-2); line-height: 1.9; font-size: .92rem;
+    white-space: pre-wrap; min-height: 2rem;
+  }
+  .typing-cursor {
+    display: inline-block; width: 2px; height: 1em;
+    background: var(--gold); animation: blink 1s step-end infinite;
+    vertical-align: text-bottom; margin-left: 1px;
+  }
+  .section-placeholder {
+    border: 1px dashed var(--ivory-border); padding: 1.5rem;
+    text-align: center; color: var(--ink-4); font-size: .82rem;
+    font-family: var(--mono);
+  }
+
+  /* 写作操作栏 */
+  .writing-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--ivory-border); background: var(--surface);
+    padding: .6rem 1.25rem; flex-shrink: 0;
+  }
+  .writing-topbar-title {
+    font-family: var(--serif); font-size: 1rem; font-weight: 600; color: var(--ink);
+  }
+
+  /* ── 完成面板 ── */
+  .done-panel {
+    border: 1px solid var(--gold); background: var(--surface);
+    padding: 1.5rem; margin-top: 2.5rem; text-align: center;
+  }
+  .done-eyebrow {
+    font-family: var(--mono); font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--gold); margin-bottom: .5rem;
+  }
+  .done-stat {
+    font-family: var(--mono); font-size: .8rem; color: var(--ink-4);
+    margin: .75rem 0;
+  }
+  .done-stat span { color: var(--ink); font-weight: 500; }
+  .done-actions { display: flex; justify-content: center; gap: .75rem; flex-wrap: wrap; }
+
+  /* 功能面板（润色/SEO） */
+  .feature-tabs {
+    display: flex; gap: .5rem; margin: 1rem 0 .75rem;
+    border-bottom: 1px solid var(--ivory-border); padding-bottom: .75rem;
+  }
+  .feature-panel { border: 1px solid var(--ivory-border); background: var(--surface); padding: 1.25rem; }
+  .feature-panel-title {
+    font-family: var(--serif); font-size: .95rem; font-weight: 600;
+    color: var(--ink); margin-bottom: .75rem;
+  }
+  .seo-kw-row {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid var(--ivory-border); padding: .45rem .75rem; margin-bottom: .4rem;
+    font-size: .8rem;
+  }
+  .seo-kw-name { font-weight: 500; color: var(--ink); }
+  .seo-kw-meta { font-family: var(--mono); font-size: .7rem; color: var(--ink-4); }
+  .seo-badge {
+    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .1rem .4rem;
+    border: 1px solid; border-radius: 0;
+  }
+  .seo-badge.high   { color: #16a34a; border-color: #16a34a; }
+  .seo-badge.medium { color: var(--gold); border-color: var(--gold); }
+  .seo-badge.low    { color: var(--ink-4); border-color: var(--ink-4); }
+  .seo-missing { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; }
+  .seo-chip {
+    font-family: var(--mono); font-size: .7rem; color: var(--ink-3);
+    border: 1px solid var(--ivory-border); padding: .2rem .55rem;
+  }
+  .seo-suggestion {
+    display: flex; gap: .5rem; font-size: .8rem; color: var(--ink-3);
+    margin-bottom: .4rem; line-height: 1.5;
+  }
+  .seo-num { color: var(--gold); font-family: var(--mono); flex-shrink: 0; }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--ink); color: var(--ivory);
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .08em; padding: .6rem 1.1rem;
+    transform: translateY(3rem); opacity: 0;
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+    z-index: 9999; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* 响应式 */
+  @media (max-width: 700px) {
+    .sidenav { display: none; }
+    .content-area { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 顶部导航 ── -->
+<header class="topbar">
+  <a class="logo" href="#">
+    <span class="logo-name">AI写作助手</span>
+    <span class="logo-tag">工作台</span>
+  </a>
+  <span class="badge">DEMO · 交互演示</span>
+</header>
+
+<!-- ── 主体 ── -->
+<div class="shell">
+
+  <!-- 左侧导航 -->
+  <aside class="sidenav">
+    <div class="sidenav-label">工作流程</div>
+    <nav>
+      <div class="step-item active" id="nav-topic">
+        <div class="step-num" id="nav-num-1">1</div> 主题
+      </div>
+      <div class="step-item" id="nav-titles">
+        <div class="step-num" id="nav-num-2">2</div> 标题
+      </div>
+      <div class="step-item" id="nav-outline">
+        <div class="step-num" id="nav-num-3">3</div> 大纲
+      </div>
+      <div class="step-item" id="nav-writing">
+        <div class="step-num" id="nav-num-4">4</div> 写作
+      </div>
+    </nav>
+
+    <!-- 写作阶段章节列表 -->
+    <div class="section-list" id="section-list">
+      <div class="section-list-label">章节进度</div>
+      <div id="section-chips"></div>
+    </div>
+
+    <!-- Token 配额 -->
+    <div class="quota-bar">
+      <div class="quota-header">
+        <span class="quota-label">Token 配额</span>
+        <span class="quota-plan">Free</span>
+      </div>
+      <div class="quota-track">
+        <div class="quota-fill" id="quota-fill"></div>
+      </div>
+      <div class="quota-nums">
+        <span id="quota-used">0</span>
+        <span>30,000</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右侧主区域 -->
+  <div class="main">
+    <!-- 步骤进度条 -->
+    <div class="stepbar">
+      <div class="stepbar-item active" id="sb-1">
+        <div class="sb-num" id="sb-num-1">1</div> 主题
+      </div>
+      <div class="stepbar-item" id="sb-2">
+        <div class="sb-num" id="sb-num-2">2</div> 标题
+      </div>
+      <div class="stepbar-item" id="sb-3">
+        <div class="sb-num" id="sb-num-3">3</div> 大纲
+      </div>
+      <div class="stepbar-item" id="sb-4">
+        <div class="sb-num" id="sb-num-4">4</div> 写作
+      </div>
+    </div>
+
+    <!-- ══ Step 1：主题 ══ -->
+    <div class="content-area screen active" id="screen-topic">
+      <div id="s1-inner">
+        <div class="page-eyebrow">Step 01</div>
+        <h1 class="page-title">开始你的文章</h1>
+        <div class="gold-rule"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="topic-input">
+            文章主题 <span style="color:#f87171">*</span>
+          </label>
+          <input class="field-input" id="topic-input"
+            placeholder="例如：AI工具推荐、职场成长技巧..."
+            value="独立博主如何用 AI 提升写作效率">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="audience-input">
+            目标读者 <span style="color:var(--ink-4)">（可选）</span>
+          </label>
+          <input class="field-input" id="audience-input"
+            placeholder="例如：职场新人、独立博主..."
+            value="独立博主、内容创作者">
+        </div>
+
+        <!-- 合规警告（输入敏感词时出现） -->
+        <div class="moderation-warn" id="mod-warn">
+          <span>⚠</span>
+          <span id="mod-warn-text">您输入的内容包含敏感词汇，请调整后重试</span>
+        </div>
+
+        <button class="btn-primary full" id="btn-gen-titles" onclick="startTitles()">
+          生成标题建议 →
+        </button>
+        <p style="margin-top:.75rem;font-size:.75rem;color:var(--ink-4);text-align:center;font-family:var(--mono)">
+          演示模式 · 数据均为模拟内容
+        </p>
+      </div>
+    </div>
+
+    <!-- ══ Step 2：标题 ══ -->
+    <div class="content-area screen" id="screen-titles">
+      <div class="page-eyebrow">Step 02</div>
+      <h1 class="page-title">选择文章标题</h1>
+      <div class="gold-rule"></div>
+
+      <!-- 骨架屏（加载中） -->
+      <div id="titles-loading">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div style="text-align:center;font-family:var(--mono);font-size:.75rem;color:var(--ink-4);margin-top:.5rem">
+          AI 生成中<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span>
+        </div>
+      </div>
+
+      <!-- 标题列表 -->
+      <div class="titles-grid" id="titles-list" style="display:none"></div>
+
+      <div class="titles-actions" id="titles-actions" style="display:none">
+        <button class="btn-ghost" onclick="regenTitles()">↻ 重新生成</button>
+        <button class="btn-primary" id="btn-confirm-title" onclick="confirmTitle()">
+          确认标题，生成大纲 →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ Step 3：大纲 ══ -->
+    <div class="content-area screen" id="screen-outline">
+      <div class="page-eyebrow">Step 03</div>
+      <h1 class="page-title">编辑文章大纲</h1>
+      <div class="gold-rule"></div>
+
+      <div class="outline-header">
+        <div class="outline-chosen" id="outline-title-display"></div>
+        <button class="btn-ghost" onclick="regenOutline()" style="font-size:.65rem">↻ 重新生成</button>
+      </div>
+
+      <!-- 骨架屏 -->
+      <div id="outline-loading">
+        <div class="skeleton" style="height:3rem;margin-bottom:.5rem"></div>
+        <div class="skeleton" style="height:5rem;margin-bottom:.5rem"></div>
+        <div class="skeleton" style="height:5rem;margin-bottom:.5rem"></div>
+        <div class="skeleton" style="height:5rem;margin-bottom:.5rem"></div>
+        <div style="text-align:center;font-family:var(--mono);font-size:.75rem;color:var(--ink-4);margin-top:.5rem">
+          AI 规划大纲<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span>
+        </div>
+      </div>
+
+      <div id="outline-content" style="display:none">
+        <div class="outline-intro">
+          <div class="outline-intro-label">引言</div>
+          <div id="outline-intro-text"></div>
+        </div>
+        <div id="outline-sections"></div>
+        <div class="outline-intro" style="margin-top:.5rem">
+          <div class="outline-intro-label">结语</div>
+          <div id="outline-conclusion-text"></div>
+        </div>
+
+        <button class="btn-primary full" style="margin-top:1.5rem" onclick="startWriting()">
+          确认大纲，开始写作 →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ Step 4：写作 ══ -->
+    <div class="screen" id="screen-writing" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+      <div class="writing-topbar">
+        <span class="writing-topbar-title">全文生成</span>
+        <div style="display:flex;gap:.5rem" id="writing-actions">
+          <button class="btn-primary" id="btn-expand-all" onclick="expandAll()" style="font-size:.65rem">
+            一键生成全文 →
+          </button>
+        </div>
+      </div>
+
+      <div class="writing-layout" style="flex:1;overflow:hidden">
+        <!-- 章节状态面板 -->
+        <div class="writing-sections-panel">
+          <div class="writing-panel-label">章节</div>
+          <div id="writing-sec-list"></div>
+        </div>
+
+        <!-- 全文预览 -->
+        <div class="writing-content-area" id="article-preview">
+          <div class="article-title-display" id="article-title-h1"></div>
+          <div class="gold-rule" style="margin:.5rem 0 1.5rem"></div>
+          <div class="article-intro" id="article-intro-body"></div>
+          <div id="article-sections-body"></div>
+          <div style="border-top:1px solid var(--ivory-border);padding-top:1.5rem;margin-top:1rem">
+            <div class="article-section-title">结语</div>
+            <div class="article-section-body" id="article-conclusion-body"></div>
+          </div>
+
+          <!-- 完成面板 -->
+          <div class="done-panel" id="done-panel" style="display:none">
+            <div class="done-eyebrow">Article Complete</div>
+            <div style="font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)">
+              文章生成完毕
+            </div>
+            <div class="done-stat">
+              全文约 <span id="word-count">0</span> 字 · 由 Multi-Agent 协作完成
+            </div>
+
+            <!-- 功能选项卡 -->
+            <div class="feature-tabs" id="feature-tabs" style="justify-content:center">
+              <button class="btn-ghost" id="tab-export" onclick="showPanel('export')" style="font-size:.65rem">↓ 导出文章</button>
+              <button class="btn-ghost" id="tab-polish" onclick="showPanel('polish')" style="font-size:.65rem">✦ 润色文章</button>
+              <button class="btn-ghost" id="tab-seo"    onclick="showPanel('seo')"    style="font-size:.65rem">◎ SEO 分析</button>
+            </div>
+
+            <!-- 导出面板 -->
+            <div class="feature-panel" id="panel-export" style="display:none;text-align:left">
+              <div class="feature-panel-title">导出文章</div>
+              <p style="font-size:.82rem;color:var(--ink-3);margin-bottom:1rem">
+                全文约 <strong id="export-word-count">0</strong> 字，可下载 .md 文件或直接复制。
+              </p>
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+                <button class="btn-primary" onclick="demoDownload()" style="font-size:.7rem">↓ 下载 .md 文件</button>
+                <button class="btn-ghost" onclick="demoCopy('md')" id="copy-md-btn" style="font-size:.7rem">Markdown 复制</button>
+                <button class="btn-ghost" onclick="demoCopy('plain')" id="copy-plain-btn" style="font-size:.7rem">纯文本复制</button>
+              </div>
+              <p style="margin-top:.75rem;font-size:.72rem;color:var(--ink-4);font-family:var(--mono)">
+                纯文本复制适合直接粘贴到微信公众号、掘金等平台
+              </p>
+            </div>
+
+            <!-- 润色面板 -->
+            <div class="feature-panel" id="panel-polish" style="display:none;text-align:left">
+              <div class="feature-panel-title">文章润色</div>
+              <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem">
+                <label style="display:flex;align-items:flex-start;gap:.6rem;border:1px solid var(--ivory-border);padding:.6rem .85rem;cursor:pointer" id="polish-light">
+                  <input type="radio" name="intensity" value="light" style="margin-top:.15rem;accent-color:var(--gold)">
+                  <div>
+                    <div style="font-family:var(--mono);font-size:.7rem;font-weight:600;text-transform:uppercase;color:var(--ink)">轻度润色</div>
+                    <div style="font-size:.75rem;color:var(--ink-4);margin-top:.15rem">修正语病，改善流畅度</div>
+                  </div>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:.6rem;border:1px solid var(--gold);background:rgba(184,134,11,.03);padding:.6rem .85rem;cursor:pointer" id="polish-medium">
+                  <input type="radio" name="intensity" value="medium" checked style="margin-top:.15rem;accent-color:var(--gold)">
+                  <div>
+                    <div style="font-family:var(--mono);font-size:.7rem;font-weight:600;text-transform:uppercase;color:var(--ink)">中度润色</div>
+                    <div style="font-size:.75rem;color:var(--ink-4);margin-top:.15rem">重写句子，提升表达力</div>
+                  </div>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:.6rem;border:1px solid var(--ivory-border);padding:.6rem .85rem;cursor:pointer" id="polish-deep">
+                  <input type="radio" name="intensity" value="deep" style="margin-top:.15rem;accent-color:var(--gold)">
+                  <div>
+                    <div style="font-family:var(--mono);font-size:.7rem;font-weight:600;text-transform:uppercase;color:var(--ink)">深度润色</div>
+                    <div style="font-size:.75rem;color:var(--ink-4);margin-top:.15rem">重构段落，专业级文风</div>
+                  </div>
+                </label>
+              </div>
+              <button class="btn-primary" id="btn-polish" onclick="demoPolish()" style="font-size:.7rem">开始润色 →</button>
+              <div id="polish-result" style="display:none;margin-top:1rem">
+                <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:.5rem">润色结果预览</div>
+                <div style="border:1px solid var(--ivory-border);background:var(--ivory);padding:1rem;font-family:var(--serif);font-size:.85rem;line-height:1.8;color:var(--ink-2);max-height:12rem;overflow-y:auto" id="polish-result-text"></div>
+                <div style="display:flex;gap:.6rem;margin-top:.75rem">
+                  <button class="btn-primary" style="font-size:.7rem" onclick="applyPolish()">✓ 应用润色</button>
+                  <button class="btn-ghost" style="font-size:.7rem" onclick="discardPolish()">放弃</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SEO 分析面板 -->
+            <div class="feature-panel" id="panel-seo" style="display:none;text-align:left">
+              <div class="feature-panel-title">SEO 关键词分析</div>
+              <div id="seo-loading" style="display:none;font-family:var(--mono);font-size:.75rem;color:var(--ink-4)">
+                分析中<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span>
+              </div>
+              <div id="seo-result" style="display:none">
+                <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:.5rem">核心关键词</div>
+                <div id="seo-kw-list"></div>
+                <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin:.75rem 0 .4rem">建议补充关键词</div>
+                <div class="seo-missing" id="seo-missing-list"></div>
+                <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin:.75rem 0 .4rem">优化建议</div>
+                <div id="seo-suggestions"></div>
+              </div>
+              <button class="btn-primary" id="btn-seo" onclick="demoSeo()" style="font-size:.7rem">分析关键词 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.main -->
+</div><!-- /.shell -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ JavaScript ══════════════ -->
+<script>
+// ── 演示数据 ──────────────────────────────────────────────────
+const DEMO_TITLES = [
+  { text: '独立博主必学：10 个让写作效率翻倍的 AI 工具', reason: '数字型标题，具体可量化，吸引效率敏感型读者' },
+  { text: '从 0 到 1：博主用 AI 写作的完整工作流拆解', reason: '流程型标题，强调系统性，适合想学方法论的读者' },
+  { text: '我用 AI 写了 100 篇文章，总结出这 5 个核心心得', reason: '经验型标题，真实感强，引发共鸣' },
+  { text: 'AI 时代，内容创作者应该怎么用好这些新工具？', reason: '问题型标题，引发思考，带入感强' },
+  { text: '不会用 AI 写作？你已经落后同行 6 个月了', reason: '紧迫感型标题，制造危机感，点击率高' },
+]
+
+const DEMO_OUTLINE = {
+  intro: '随着 AI 工具的快速普及，越来越多的独立博主开始探索如何将 AI 融入自己的创作流程。本文将系统拆解一套经过验证的 AI 辅助写作工作流，帮助你在保持内容质量的前提下，大幅提升产出效率。',
+  sections: [
+    {
+      id: 's1', title: '为什么博主需要 AI 写作工具',
+      points: ['传统写作的时间成本分析', 'AI 工具改变了哪些创作环节', '效率提升的真实数据']
+    },
+    {
+      id: 's2', title: 'AI 辅助写作的核心工作流',
+      points: ['主题选择与关键词研究', '大纲规划与结构设计', '段落扩写与内容填充', '润色优化与发布准备']
+    },
+    {
+      id: 's3', title: '推荐工具与使用场景',
+      points: ['标题生成：找到最吸引读者的表达', 'SEO 辅助：让内容被搜索引擎发现', '图片配套：AI 生图工具实践']
+    },
+    {
+      id: 's4', title: '保持人味：AI 写作的边界与原则',
+      points: ['哪些环节必须亲自完成', '如何在 AI 初稿上注入个人观点', '读者感知与信任维护']
+    },
+  ],
+  conclusion: 'AI 工具不会取代有独立思考的创作者，但会让擅用工具的人跑得更快。建立一套适合自己的 AI 写作工作流，是每个独立博主在内容竞争中保持优势的关键一步。'
+}
+
+const DEMO_CONTENT = {
+  s1: `在开始讨论 AI 工具之前，我们先来看一组数字：一篇 2000 字的博客文章，从选题、调研、写作到排版发布，传统方式平均需要 4-6 小时。而引入 AI 辅助后，这个时间可以压缩到 1.5-2 小时——效率提升超过 60%。
+
+这背后的核心原因不是 AI 替你写作，而是 AI 帮你解决了写作中最消耗时间的两个环节：**信息整理**和**初稿填充**。
+
+对独立博主来说，时间就是一切。当你能把节省下来的时间投入到内容质量把关、个人观点打磨和读者互动上，你的内容竞争力才会真正提升。`,
+
+  s2: `一套成熟的 AI 辅助写作工作流通常包含以下几个阶段：
+
+**第一步：主题确定与关键词研究**
+输入你的大方向，让 AI 生成 10 个差异化的标题候选，覆盖数字型、问题型、对比型等不同形式。选定标题后，AI 会同步给出 SEO 关键词建议。
+
+**第二步：大纲规划**
+基于选定标题，AI 在 30 秒内生成包含引言、3-5 个主体章节和结语的完整大纲。你可以拖拽调整顺序、添加删除章节，大纲是你的，AI 只是给出初稿。
+
+**第三步：段落扩写**
+这是最节省时间的环节。逐章节触发 AI 扩写，每章约 300-500 字，流式实时输出。你在等待的同时可以审阅已完成的章节。
+
+**第四步：润色与发布**
+全文完成后，用 AI 润色功能做最后一轮优化，然后导出 Markdown 或纯文本，粘贴到你的发布平台。`,
+
+  s3: `在实际使用中，以下几类工具覆盖了写作流程的核心需求：
+
+**标题生成工具**的核心价值在于帮你快速穷举可能性。一个好标题能让点击率提升 3-5 倍，但人工想标题往往陷入惯性思维。AI 能在同一主题下生成风格迥异的 10 个候选，让你从中选出最适合自己读者的那个。
+
+**SEO 辅助功能**不是简单的关键词堆砌，而是帮你分析现有内容中关键词的分布密度，指出哪些词出现不足、哪些词可以自然融入。这对想通过搜索引擎获取长尾流量的博主尤其有价值。
+
+**AI 配图工具**（如 Midjourney、DALL-E）可以根据文章标题或核心概念生成封面图，省去了找图、买图的麻烦，同时让你的文章封面更有辨识度。`,
+
+  s4: `在享受 AI 带来的效率红利的同时，有几条原则需要始终坚守：
+
+**个人经历和观点不能外包给 AI。** 读者关注你，是因为他们信任你的视角和判断。AI 能写出流畅的通用内容，但你亲身踩过的坑、得出的结论、对行业的独特洞察——这些才是你内容的核心壁垒。
+
+**事实性内容必须人工核实。** AI 有时会生成听起来合理但实际有误的数据或案例。任何具体的数字、引用、案例，都需要你自己确认来源。
+
+**最后一公里的"人味"加工必不可少。** 拿到 AI 初稿后，用自己的语言改写开头和结尾，加入 1-2 个真实的个人经历或观察，把"我们"改成"我"——这些细节会让读者感受到文章背后有一个真实的人在说话。`
+}
+
+const SEO_DATA = {
+  keywords: [
+    { word: 'AI写作工具', cur: 8, sug: 12, level: 'high' },
+    { word: '独立博主', cur: 5, sug: 8, level: 'high' },
+    { word: '写作效率', cur: 3, sug: 6, level: 'medium' },
+    { word: '内容创作', cur: 2, sug: 5, level: 'medium' },
+    { word: 'ChatGPT写作', cur: 0, sug: 3, level: 'low' },
+  ],
+  missing: ['AI提示词', 'Prompt工程', 'SEO优化', '内容变现'],
+  suggestions: [
+    '在文章 H2 标题中增加核心关键词"AI写作工具"的出现频次',
+    '补充"AI提示词"相关段落，可提升该词的搜索排名',
+    '结语部分建议加入"内容变现"关键词，覆盖更多长尾搜索',
+  ]
+}
+
+const POLISH_RESULT = `在探讨 AI 工具之前，先审视一组数据：一篇 2000 字的博客，从选题调研到排版发布，传统模式平均耗费 4-6 小时。引入 AI 协同创作后，这一周期可缩短至 1.5-2 小时——效率跃升逾 60%。
+
+这一转变的本质，并非 AI 代劳写作，而是它精准承接了最耗时的两大环节：**信息整合**与**初稿构建**。
+
+对独立博主而言，时间即资产。当创作者得以将节省的精力重新投入内容深度打磨、观点独创性提炼与读者关系维护，内容的核心竞争力才能实现真正跃迁。`
+
+// ── 状态 ──────────────────────────────────────────────────────
+let selectedTitleIdx = 0
+let currentStep = 1
+let sectionStates = {} // { id: 'idle'|'running'|'done' }
+let agentStates = {}   // { id: {research,write,review} }
+let sectionContent = {}
+let allDone = false
+let activePanel = null
+
+// ── 工具函数 ──────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
+
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2200)
+}
+
+function setStep(n) {
+  currentStep = n
+  ;[1,2,3,4].forEach(i => {
+    const sb = document.getElementById(`sb-${i}`)
+    const nav = document.getElementById(['nav-topic','nav-titles','nav-outline','nav-writing'][i-1])
+    const num = document.getElementById(`sb-num-${i}`)
+    const nnum = document.getElementById(`nav-num-${i}`)
+
+    sb.className  = 'stepbar-item'  + (i===n ? ' active' : i<n ? ' done' : '')
+    nav.className = 'step-item'     + (i===n ? ' active' : i<n ? ' done' : '')
+    num.textContent  = i < n ? '✓' : i
+    nnum.textContent = i < n ? '✓' : i
+  })
+
+  ;['topic','titles','outline'].forEach(s => {
+    document.getElementById(`screen-${s}`).classList.remove('active')
+  })
+  const writingEl = document.getElementById('screen-writing')
+  writingEl.style.display = 'none'
+
+  if (n <= 3) {
+    const ids = ['topic','titles','outline']
+    document.getElementById(`screen-${ids[n-1]}`).classList.add('active')
+  } else {
+    writingEl.style.display = 'flex'
+  }
+}
+
+// ── 配额动画 ──────────────────────────────────────────────────
+function animateQuota(used) {
+  const pct = Math.min(100, Math.round(used / 300))
+  document.getElementById('quota-fill').style.width = pct + '%'
+  let cur = parseInt(document.getElementById('quota-used').textContent.replace(/,/g,'')) || 0
+  const step = Math.ceil((used - cur) / 30)
+  const iv = setInterval(() => {
+    cur = Math.min(used, cur + step)
+    document.getElementById('quota-used').textContent = cur.toLocaleString()
+    if (cur >= used) clearInterval(iv)
+  }, 40)
+}
+
+// ── Step 1 → Step 2 ────────────────────────────────────────────
+function startTitles() {
+  const topic = document.getElementById('topic-input').value.trim()
+  if (!topic) {
+    document.getElementById('topic-input').focus()
+    return
+  }
+
+  // 简单演示：检测"敏感"词
+  if (/赌博|色情/.test(topic)) {
+    const warn = document.getElementById('mod-warn')
+    document.getElementById('mod-warn-text').textContent = '您输入的内容包含敏感词汇，请调整后重试'
+    warn.classList.add('visible')
+    return
+  }
+  document.getElementById('mod-warn').classList.remove('visible')
+
+  setStep(2)
+  document.getElementById('titles-loading').style.display = 'block'
+  document.getElementById('titles-list').style.display = 'none'
+  document.getElementById('titles-actions').style.display = 'none'
+
+  setTimeout(() => renderTitles(), 2000)
+}
+
+function renderTitles() {
+  document.getElementById('titles-loading').style.display = 'none'
+  const list = document.getElementById('titles-list')
+  list.innerHTML = ''
+
+  DEMO_TITLES.forEach((t, i) => {
+    const card = document.createElement('div')
+    card.className = 'title-card' + (i === selectedTitleIdx ? ' selected' : '')
+    card.dataset.idx = i
+    card.innerHTML = `
+      <div class="title-radio"></div>
+      <div>
+        <div class="title-text">${t.text}</div>
+        <div class="title-reason">${t.reason}</div>
+      </div>`
+    card.onclick = () => selectTitle(i)
+    list.appendChild(card)
+  })
+
+  list.style.display = 'flex'
+  document.getElementById('titles-actions').style.display = 'flex'
+}
+
+function selectTitle(idx) {
+  selectedTitleIdx = idx
+  document.querySelectorAll('.title-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx)
+  })
+}
+
+function regenTitles() {
+  document.getElementById('titles-list').style.display = 'none'
+  document.getElementById('titles-actions').style.display = 'none'
+  document.getElementById('titles-loading').style.display = 'block'
+  setTimeout(() => renderTitles(), 1800)
+}
+
+// ── Step 2 → Step 3 ────────────────────────────────────────────
+function confirmTitle() {
+  const title = DEMO_TITLES[selectedTitleIdx].text
+  document.getElementById('outline-title-display').textContent = title
+  setStep(3)
+  document.getElementById('outline-loading').style.display = 'block'
+  document.getElementById('outline-content').style.display = 'none'
+  animateQuota(1200)
+  setTimeout(() => renderOutline(), 2200)
+}
+
+function renderOutline() {
+  document.getElementById('outline-loading').style.display = 'none'
+
+  document.getElementById('outline-intro-text').textContent = DEMO_OUTLINE.intro
+  document.getElementById('outline-conclusion-text').textContent = DEMO_OUTLINE.conclusion
+
+  const secEl = document.getElementById('outline-sections')
+  secEl.innerHTML = ''
+  DEMO_OUTLINE.sections.forEach(sec => {
+    const div = document.createElement('div')
+    div.className = 'outline-card'
+    div.innerHTML = `
+      <div class="outline-card-head">
+        <div class="outline-card-title">${sec.title}</div>
+        <span class="outline-drag">⠿⠿</span>
+      </div>
+      <div class="outline-points">
+        ${sec.points.map(p => `<div class="outline-point">${p}</div>`).join('')}
+      </div>`
+    secEl.appendChild(div)
+  })
+
+  document.getElementById('outline-content').style.display = 'block'
+  animateQuota(2800)
+}
+
+function regenOutline() {
+  document.getElementById('outline-content').style.display = 'none'
+  document.getElementById('outline-loading').style.display = 'block'
+  setTimeout(() => renderOutline(), 1800)
+}
+
+// ── Step 3 → Step 4 ────────────────────────────────────────────
+function startWriting() {
+  setStep(4)
+
+  // 初始化章节状态
+  DEMO_OUTLINE.sections.forEach(s => {
+    sectionStates[s.id] = 'idle'
+    agentStates[s.id] = { research: 'idle', write: 'idle', review: 'idle' }
+    sectionContent[s.id] = ''
+  })
+
+  // 设置文章标题
+  const title = DEMO_TITLES[selectedTitleIdx].text
+  document.getElementById('article-title-h1').textContent = title
+  document.getElementById('article-intro-body').textContent = DEMO_OUTLINE.intro
+  document.getElementById('article-conclusion-body').textContent = DEMO_OUTLINE.conclusion
+
+  // 渲染章节骨架
+  const body = document.getElementById('article-sections-body')
+  body.innerHTML = ''
+  DEMO_OUTLINE.sections.forEach(sec => {
+    const div = document.createElement('div')
+    div.className = 'article-section'
+    div.id = `article-sec-${sec.id}`
+    div.innerHTML = `
+      <div class="article-section-title">${sec.title}</div>
+      <div class="section-placeholder" id="placeholder-${sec.id}">等待生成</div>
+      <div class="article-section-body" id="body-${sec.id}" style="display:none"></div>`
+    body.appendChild(div)
+  })
+
+  // 渲染左侧章节面板
+  renderSideSecList()
+
+  // 显示章节列表（左导航）
+  document.getElementById('section-list').classList.add('visible')
+  renderSideNav()
+}
+
+function renderSideSecList() {
+  const el = document.getElementById('writing-sec-list')
+  el.innerHTML = ''
+  DEMO_OUTLINE.sections.forEach(sec => {
+    const state = sectionStates[sec.id]
+    const agents = agentStates[sec.id]
+    const div = document.createElement('div')
+    div.className = 'writing-sec-item' + (state === 'running' ? ' running' : state === 'done' ? ' done' : '')
+    div.id = `sec-panel-${sec.id}`
+
+    const agentHtml = state !== 'idle' ? `
+      <div class="writing-sec-agents">
+        <div class="agent-badge ${agents.research}">🔍${agentIcon(agents.research)}</div>
+        <div class="agent-badge ${agents.write}">✍${agentIcon(agents.write)}</div>
+        <div class="agent-badge ${agents.review}">✅${agentIcon(agents.review)}</div>
+      </div>` : (state === 'done' ? '<div style="font-size:.7rem;color:#16a34a;margin-top:.2rem">已完成</div>' : '')
+
+    const genBtn = state === 'idle' ? `
+      <button onclick="expandSection('${sec.id}')"
+        style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;
+               color:var(--gold);background:none;border:none;cursor:pointer;margin-top:.25rem;padding:0">
+        生成
+      </button>` : ''
+
+    div.innerHTML = `<div class="writing-sec-name">${sec.title}</div>${agentHtml}${genBtn}`
+    el.appendChild(div)
+  })
+}
+
+function renderSideNav() {
+  const chips = document.getElementById('section-chips')
+  chips.innerHTML = ''
+  DEMO_OUTLINE.sections.forEach(sec => {
+    const state = sectionStates[sec.id]
+    const div = document.createElement('div')
+    div.className = 'section-chip' + (state === 'running' ? ' writing' : state === 'done' ? ' done' : '')
+    div.innerHTML = `<span class="chip-icon">${state==='done'?'✓':state==='running'?'⟳':'○'}</span>${sec.title}`
+    chips.appendChild(div)
+  })
+}
+
+function agentIcon(phase) {
+  if (phase === 'running') return '⟳'
+  if (phase === 'done')    return '✓'
+  if (phase === 'failed')  return '✕'
+  return '○'
+}
+
+// ── 章节扩写 ──────────────────────────────────────────────────
+async function expandSection(id) {
+  if (sectionStates[id] !== 'idle') return
+  sectionStates[id] = 'running'
+  agentStates[id] = { research: 'running', write: 'idle', review: 'idle' }
+  renderSideSecList()
+  renderSideNav()
+  animateQuota(parseInt(document.getElementById('quota-used').textContent.replace(/,/g,'')) + 800)
+
+  document.getElementById(`placeholder-${id}`).innerHTML =
+    '<span class="animate-pulse" style="color:var(--ink-4);font-family:var(--mono);font-size:.75rem">正在生成<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>'
+
+  // Agent 状态动画
+  await sleep(900)
+  agentStates[id].research = 'done'
+  agentStates[id].write = 'running'
+  renderSideSecList()
+
+  // 流式打字
+  await sleep(400)
+  document.getElementById(`placeholder-${id}`).style.display = 'none'
+  const bodyEl = document.getElementById(`body-${id}`)
+  bodyEl.style.display = 'block'
+  bodyEl.innerHTML = '<span class="typing-cursor"></span>'
+
+  const fullText = DEMO_CONTENT[id] || '内容生成中...'
+  let typed = ''
+  for (let i = 0; i < fullText.length; i++) {
+    typed += fullText[i]
+    bodyEl.innerHTML = typed + '<span class="typing-cursor"></span>'
+    bodyEl.scrollIntoView({ block: 'nearest' })
+    await sleep(fullText[i] === '\n' ? 40 : 18)
+  }
+
+  bodyEl.innerHTML = fullText // 清除光标
+
+  // 审校
+  agentStates[id].write = 'done'
+  agentStates[id].review = 'running'
+  renderSideSecList()
+  await sleep(700)
+  agentStates[id].review = 'done'
+  sectionStates[id] = 'done'
+  sectionContent[id] = fullText
+  renderSideSecList()
+  renderSideNav()
+
+  // 检查是否全部完成
+  checkAllDone()
+}
+
+function checkAllDone() {
+  const done = DEMO_OUTLINE.sections.every(s => sectionStates[s.id] === 'done')
+  if (done && !allDone) {
+    allDone = true
+    const wc = Object.values(sectionContent).join('').length / 2
+    document.getElementById('word-count').textContent = Math.round(wc)
+    document.getElementById('export-word-count').textContent = Math.round(wc)
+    document.getElementById('done-panel').style.display = 'block'
+    document.getElementById('btn-expand-all').style.display = 'none'
+    animateQuota(parseInt(document.getElementById('quota-used').textContent.replace(/,/g,'')) + 500)
+  }
+}
+
+async function expandAll() {
+  const btn = document.getElementById('btn-expand-all')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spin">⟳</span> 生成中...'
+  // 并行触发所有未生成章节
+  await Promise.all(
+    DEMO_OUTLINE.sections
+      .filter(s => sectionStates[s.id] === 'idle')
+      .map(s => expandSection(s.id))
+  )
+  btn.disabled = false
+}
+
+// ── 功能面板 ──────────────────────────────────────────────────
+function showPanel(name) {
+  ;['export','polish','seo'].forEach(p => {
+    document.getElementById(`panel-${p}`).style.display = 'none'
+    const tab = document.getElementById(`tab-${p}`)
+    tab.className = 'btn-ghost'
+    tab.style.fontSize = '.65rem'
+  })
+  if (activePanel === name) {
+    activePanel = null
+    return
+  }
+  activePanel = name
+  document.getElementById(`panel-${name}`).style.display = 'block'
+  const tab = document.getElementById(`tab-${name}`)
+  tab.className = 'btn-primary'
+  tab.style.fontSize = '.65rem'
+
+  if (name === 'seo') {
+    document.getElementById('seo-result').style.display = 'none'
+    document.getElementById('btn-seo').style.display = 'inline-flex'
+    document.getElementById('seo-loading').style.display = 'none'
+  }
+}
+
+function demoDownload() {
+  const title = DEMO_TITLES[selectedTitleIdx].text
+  const content = [
+    `# ${title}`, '',
+    DEMO_OUTLINE.intro, '',
+    ...DEMO_OUTLINE.sections.flatMap(s => [
+      `## ${s.title}`, '',
+      sectionContent[s.id] || '', ''
+    ]),
+    '## 结语', '',
+    DEMO_OUTLINE.conclusion
+  ].join('\n')
+
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${title.slice(0,40)}.md`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  showToast('✓ 已下载 .md 文件')
+}
+
+function demoCopy(type) {
+  const title = DEMO_TITLES[selectedTitleIdx].text
+  let text = `# ${title}\n\n${DEMO_OUTLINE.intro}\n\n`
+  DEMO_OUTLINE.sections.forEach(s => {
+    text += `## ${s.title}\n\n${sectionContent[s.id] || ''}\n\n`
+  })
+  text += `## 结语\n\n${DEMO_OUTLINE.conclusion}`
+
+  if (type === 'plain') {
+    text = text.replace(/^#{1,6}\s+/gm, '').replace(/\*\*(.*?)\*\*/g, '$1').trim()
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(type === 'md' ? '✓ Markdown 已复制' : '✓ 纯文本已复制')
+  }).catch(() => showToast('✓ 已复制'))
+}
+
+async function demoPolish() {
+  const btn = document.getElementById('btn-polish')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spin">⟳</span> 润色中...'
+  await sleep(2000)
+  document.getElementById('polish-result-text').textContent = POLISH_RESULT
+  document.getElementById('polish-result').style.display = 'block'
+  btn.disabled = false
+  btn.innerHTML = '开始润色 →'
+}
+
+function applyPolish() {
+  // 将润色结果应用到第一章节
+  const firstId = DEMO_OUTLINE.sections[0].id
+  document.getElementById(`body-${firstId}`).textContent = POLISH_RESULT
+  sectionContent[firstId] = POLISH_RESULT
+  document.getElementById('polish-result').style.display = 'none'
+  showToast('✓ 润色已应用')
+  showPanel('polish') // 收起面板
+}
+
+function discardPolish() {
+  document.getElementById('polish-result').style.display = 'none'
+}
+
+async function demoSeo() {
+  const btn = document.getElementById('btn-seo')
+  btn.style.display = 'none'
+  document.getElementById('seo-loading').style.display = 'block'
+  await sleep(1800)
+  document.getElementById('seo-loading').style.display = 'none'
+
+  // 关键词列表
+  const kwList = document.getElementById('seo-kw-list')
+  kwList.innerHTML = ''
+  SEO_DATA.keywords.forEach(kw => {
+    const div = document.createElement('div')
+    div.className = 'seo-kw-row'
+    div.innerHTML = `
+      <span class="seo-kw-name">${kw.word}</span>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <span class="seo-kw-meta">当前 ${kw.cur} → 建议 ${kw.sug}</span>
+        <span class="seo-badge ${kw.level}">${kw.level === 'high' ? '重要' : kw.level === 'medium' ? '一般' : '参考'}</span>
+      </div>`
+    kwList.appendChild(div)
+  })
+
+  // 缺失关键词
+  const missing = document.getElementById('seo-missing-list')
+  missing.innerHTML = SEO_DATA.missing.map(w => `<span class="seo-chip">+ ${w}</span>`).join('')
+
+  // 建议
+  const sugg = document.getElementById('seo-suggestions')
+  sugg.innerHTML = SEO_DATA.suggestions.map((s, i) =>
+    `<div class="seo-suggestion"><span class="seo-num">${i+1}.</span>${s}</div>`
+  ).join('')
+
+  document.getElementById('seo-result').style.display = 'block'
+}
+
+// ── 初始化 ──────────────────────────────────────────────────
+// 回车触发
+document.getElementById('topic-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startTitles()
+})
+document.getElementById('audience-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startTitles()
+})
+
+// 输入时清除合规警告
+document.getElementById('topic-input').addEventListener('input', () => {
+  document.getElementById('mod-warn').classList.remove('visible')
+})
+</script>
+</body>
+</html>
