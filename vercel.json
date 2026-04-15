@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "env": {
-    "ANTHROPIC_API_KEY": "@anthropic_api_key",
+    "GLM_API_KEY": "@glm_api_key",
     "CLERK_SECRET_KEY": "@clerk_secret_key",
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
     "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
