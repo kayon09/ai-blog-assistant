@@ -12,3 +12,5 @@ out/
 
 # TypeScript 构建缓存
 tsconfig.tsbuildinfo
+
+.vercel
