@@ -4,7 +4,7 @@
 // ============================================================
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   DndContext,
@@ -959,7 +959,7 @@ function WritingStep({
 // ═══════════════════════════════════════════════════════════════
 // 主页面
 // ═══════════════════════════════════════════════════════════════
-export default function EditorPage() {
+function EditorPageInner() {
   const editor = useArticleEditor()
   const activeSectionRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
@@ -1162,5 +1162,13 @@ export default function EditorPage() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-[var(--color-ink-muted)]">加载中…</div>}>
+      <EditorPageInner />
+    </Suspense>
   )
 }

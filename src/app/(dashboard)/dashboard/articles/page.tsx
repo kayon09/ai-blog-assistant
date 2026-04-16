@@ -27,7 +27,6 @@ function formatRelativeTime(date: Date): string {
 
 // ── DB 行 → Article 实体 ──────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowToArticle(row: Record<string, any>): Article {
   return {
     id: row.id as string,
