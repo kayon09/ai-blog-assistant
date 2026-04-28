@@ -85,7 +85,7 @@
 ### 1. 克隆并安装
 
 ```bash
-git clone https://github.com/your-username/ai-blog-assistant.git
+git clone https://github.com/kayon09/ai-blog-assistant.git
 cd ai-blog-assistant
 npm install
 ```
