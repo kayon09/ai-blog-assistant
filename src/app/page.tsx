@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   SignedIn,
   SignedOut,
@@ -346,7 +347,18 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', height: 340 }}>
+              <div style={{ height: 340, backgroundColor: '#F8FAFF', position: 'relative' }}>
+                <Image
+                  src="/project-screenshot.png"
+                  alt="AI写作助手项目界面截图"
+                  fill
+                  sizes="(min-width: 1200px) 560px, 100vw"
+                  priority
+                  style={{ objectFit: 'cover', objectPosition: 'top left' }}
+                />
+              </div>
+
+              <div style={{ display: 'none', height: 340 }}>
                 {/* Sidebar */}
                 <div style={{ width: 140, borderRight: `1px solid ${C.border}`, padding: '16px 0', flexShrink: 0 }}>
                   <div style={{ padding: '0 12px', marginBottom: 8 }}>
