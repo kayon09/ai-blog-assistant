@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   SignedIn,
   SignedOut,
@@ -7,7 +10,72 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 
-// ─── Data ────────────────────────────────────────────────────
+// ─── Design tokens (local, overrides global) ──────────────
+const C = {
+  blue: '#3B5BDB',
+  blueDark: '#2F4AC5',
+  blueLight: '#EEF2FF',
+  blueMid: '#4C6EF5',
+  text: '#1A1D23',
+  textSub: '#4B5563',
+  textMuted: '#9CA3AF',
+  border: '#E5E8F0',
+  surface: '#FFFFFF',
+  bg: '#F0F2FA',
+}
+
+// ─── Data ─────────────────────────────────────────────────
+const navLinks = [
+  { label: '首页', href: '/' },
+  { label: '功能', href: '#features' },
+  { label: '模板', href: '#templates' },
+  { label: '定价', href: '#pricing' },
+  { label: '博客', href: '/demo' },
+]
+
+const heroBadges = [
+  { icon: '⚡', title: 'AI 智能生成', sub: '快速生成高质量内容' },
+  { icon: '✦', title: '多场景模板', sub: '覆盖 100+ 写作场景' },
+  { icon: '🔒', title: '安全可靠', sub: '隐私保护，放心使用' },
+]
+
+const templates = [
+  { icon: '📝', color: '#3B5BDB', bg: '#EEF2FF', title: '文章写作', sub: '生成各类文章和博客' },
+  { icon: '📢', color: '#0CA678', bg: '#E6FCF5', title: '营销文案', sub: '产品推广/广告文案' },
+  { icon: '✉️', color: '#7950F2', bg: '#F3F0FF', title: '邮件写作', sub: '专业邮件/服务沟通' },
+  { icon: '📓', color: '#F03E3E', bg: '#FFF5F5', title: '学习笔记', sub: '整理知识/学习笔记' },
+  { icon: '📊', color: '#1971C2', bg: '#E7F5FF', title: '工作汇报', sub: '高效汇报/总结' },
+  { icon: '✨', color: '#E67700', bg: '#FFF9DB', title: '创意故事', sub: '小说/故事创作' },
+]
+
+const testimonials = [
+  {
+    name: '李同学',
+    role: '内容创作者',
+    avatar: '👩',
+    content: 'AI写作助手让我的写作效率提升了 3 倍，内容质量也大大提高！',
+  },
+  {
+    name: '张先生',
+    role: '市场营销',
+    avatar: '👨',
+    content: '模板非常丰富，生成的内容很自然，几乎不需要再修改。',
+  },
+  {
+    name: '王同学',
+    role: '大学生',
+    avatar: '🧑',
+    content: '作为学生，AI写作助手帮我快速整理资料，写论文轻松多了！',
+  },
+]
+
+const statsRow = [
+  { icon: '👥', num: '10,000+', label: '活跃用户' },
+  { icon: '📄', num: '100+', label: '写作模板' },
+  { icon: '📝', num: '300,000+', label: '生成文章' },
+  { icon: '👍', num: '99%', label: '用户满意度' },
+]
+
 const features = [
   {
     label: 'I',
@@ -49,55 +117,17 @@ const steps = [
 ]
 
 const comparisons = [
-  {
-    label: '写一篇 2000 字技术博客',
-    before: '3–4 小时',
-    after: '30–45 分钟',
-    saving: '节省 75%',
-  },
-  {
-    label: '从灵感到可发布初稿',
-    before: '2–3 天',
-    after: '当天完成',
-    saving: '提速 5x',
-  },
-  {
-    label: '大纲反复改动次数',
-    before: '平均 4–6 次',
-    after: '1–2 次',
-    saving: '减少 70%',
-  },
-  {
-    label: '写作时的卡顿次数',
-    before: '每篇 8–12 次',
-    after: '几乎为零',
-    saving: '专注度 ↑',
-  },
-]
-
-const testimonials = [
-  {
-    name: '张小雨',
-    role: '独立博主 · 科技领域',
-    content: '用了 AI写作助手之后，我的更新频率从每月 2 篇提升到了每周 3 篇，读者涨了 3 倍。这不是玄学，是时间结构的改变。',
-  },
-  {
-    name: '李明远',
-    role: '内容营销经理',
-    content: '以前写一篇产品文章要半天，现在 30 分钟搞定，而且质量更好。团队效率翻倍，再也不用熬夜赶稿。',
-  },
-  {
-    name: '陈晓芸',
-    role: '自媒体运营者',
-    content: 'AI 真的学会了我的语气。生成的内容几乎不用大改，直接发出去就行——这才是真正的写作伴侣。',
-  },
+  { label: '写一篇 2000 字技术博客', before: '3–4 小时', after: '30–45 分钟', saving: '节省 75%' },
+  { label: '从灵感到可发布初稿', before: '2–3 天', after: '当天完成', saving: '提速 5x' },
+  { label: '大纲反复改动次数', before: '平均 4–6 次', after: '1–2 次', saving: '减少 70%' },
+  { label: '写作时的卡顿次数', before: '每篇 8–12 次', after: '几乎为零', saving: '专注度 ↑' },
 ]
 
 const plans = [
   {
     tier: 'Free',
     price: '¥0',
-    priceOriginal: null,       // 无划线原价
+    priceOriginal: null,
     period: '永久免费',
     tagline: '先体验',
     earlyBird: false,
@@ -117,7 +147,7 @@ const plans = [
   {
     tier: 'Pro',
     price: '¥29',
-    priceOriginal: '¥39',     // 正式上线价，展示划线
+    priceOriginal: '¥39',
     period: '/ 月',
     tagline: '早鸟价',
     earlyBird: true,
@@ -138,7 +168,7 @@ const plans = [
   {
     tier: 'Team',
     price: '¥99',
-    priceOriginal: '¥149',    // 正式上线价
+    priceOriginal: '¥149',
     period: '/ 月',
     tagline: '早鸟价',
     earlyBird: true,
@@ -157,12 +187,6 @@ const plans = [
     ctaHref: '/upgrade?plan=team',
     featured: false,
   },
-]
-
-const stats = [
-  { num: '30 min', label: '平均成文时间' },
-  { num: '75%', label: '时间节省' },
-  { num: '4 步', label: '完整写作流程' },
 ]
 
 const faqs = [
@@ -192,904 +216,485 @@ const faqs = [
   },
 ]
 
-// ─── Page ────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-ivory)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: C.bg, fontFamily: 'system-ui, -apple-system, sans-serif', color: C.text }}>
 
-      {/* ══ SITE HEADER ══════════════════════════════════════ */}
-      <header className="site-header sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="flex items-center justify-between h-16">
+      {/* ══ NAV ══════════════════════════════════════════════ */}
+      <header style={{ backgroundColor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-            {/* Logotype */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-ink)', letterSpacing: '-0.01em' }}>
-                AI写作助手
-              </span>
-              <span className="rule-divider-gold opacity-60 group-hover:opacity-100 transition-opacity" />
-            </Link>
-
-            {/* Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="nav-link">功能</a>
-              <a href="#how-it-works" className="nav-link">流程</a>
-              <a href="#pricing" className="nav-link">定价</a>
-              <Link href="/demo" className="nav-link">演示</Link>
-            </nav>
-
-            {/* Auth */}
-            <div className="flex items-center gap-3">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="btn-ghost" style={{ padding: '0.5rem 1.25rem', fontSize: '0.6875rem' }}>
-                    登录
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.6875rem' }}>
-                    免费开始
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Link
-                  href="/dashboard"
-                  className="btn-primary"
-                  style={{ padding: '0.5rem 1.25rem', fontSize: '0.6875rem' }}
-                >
-                  工作台
-                </Link>
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-8 h-8' } }} />
-              </SignedIn>
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 14 }}>
+              W
             </div>
+            <span style={{ fontWeight: 700, fontSize: 16, color: C.text }}>AI 写作助手</span>
+          </Link>
 
+          {/* Nav links */}
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+            {navLinks.map((l) => (
+              <a key={l.label} href={l.href} style={{ fontSize: 14, color: C.textSub, textDecoration: 'none', fontWeight: 500 }}
+                onMouseEnter={(e) => { (e.target as HTMLElement).style.color = C.blue }}
+                onMouseLeave={(e) => { (e.target as HTMLElement).style.color = C.textSub }}>
+                {l.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Auth */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button style={{ fontSize: 14, color: C.textSub, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+                  登录
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button style={{ fontSize: 14, backgroundColor: C.blue, color: 'white', border: 'none', borderRadius: 8, padding: '8px 20px', cursor: 'pointer', fontWeight: 600 }}>
+                  登录 / 注册
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/dashboard" style={{ fontSize: 14, backgroundColor: C.blue, color: 'white', borderRadius: 8, padding: '8px 20px', fontWeight: 600, textDecoration: 'none' }}>
+                工作台
+              </Link>
+              <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-8 h-8' } }} />
+            </SignedIn>
           </div>
+
         </div>
       </header>
 
       {/* ══ HERO ══════════════════════════════════════════════ */}
-      <section
-        style={{ backgroundColor: 'var(--color-ivory)' }}
-        className="relative overflow-hidden pt-24 pb-20 md:pt-32 md:pb-28"
-      >
-        {/* Subtle texture lines */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, var(--color-ink) 0px, var(--color-ink) 1px, transparent 1px, transparent 48px)',
-          }}
-        />
+      <section style={{
+        background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F2FA 40%, #E8EDFF 100%)',
+        padding: '80px 24px 100px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative blobs */}
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,91,219,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -60, left: -60, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(76,110,245,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        <div className="relative max-w-5xl mx-auto px-6 md:px-10 text-center">
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'center' }}>
 
-          {/* Section label */}
-          <div className="flex justify-center mb-8">
-            <span className="section-label-inline">专为中文技术博主 · 内容创作者</span>
+          {/* Left copy */}
+          <div>
+            {/* Badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, border: `1px solid rgba(59,91,219,0.2)`, borderRadius: 20, padding: '6px 14px', marginBottom: 28 }}>
+              <span style={{ fontSize: 12 }}>✦</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>AI 驱动的智能写作助手</span>
+            </div>
+
+            {/* Headline */}
+            <h1 style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 24, color: C.text }}>
+              让写作更轻松，<br />
+              让表达<span style={{ color: C.blue }}>更出色</span>
+            </h1>
+
+            {/* Sub */}
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: C.textSub, marginBottom: 36, maxWidth: 440 }}>
+              AI写作助手帮助你快速生成高质量文章、优雅润色内容、激发创意灵感，让每一次写作都更高效、更自信。
+            </p>
+
+            {/* CTA */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
+              <SignedOut>
+                <SignUpButton mode="modal">
+                  <button style={{ fontSize: 15, fontWeight: 700, backgroundColor: C.blue, color: 'white', border: 'none', borderRadius: 10, padding: '14px 28px', cursor: 'pointer' }}>
+                    开始免费使用 →
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <Link href="/dashboard" style={{ fontSize: 15, fontWeight: 700, backgroundColor: C.blue, color: 'white', borderRadius: 10, padding: '14px 28px', textDecoration: 'none' }}>
+                  进入工作台 →
+                </Link>
+              </SignedIn>
+              <Link href="/demo" style={{ fontSize: 15, fontWeight: 600, color: C.textSub, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13 }}>▷</span> 观看演示
+              </Link>
+            </div>
+
+            {/* Mini badges */}
+            <div style={{ display: 'flex', gap: 28 }}>
+              {heroBadges.map((b) => (
+                <div key={b.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>{b.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{b.title}</div>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{b.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Display headline — 帮谁、解决什么、比手动强在哪 */}
-          <h1
-            className="mb-6"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'var(--text-display)',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.1,
-              color: 'var(--color-ink)',
-            }}
-          >
-            把博客草稿变成
-            <br />
-            <span style={{ fontStyle: 'italic', color: 'var(--color-gold)' }}>
-              可发布内容
-            </span>
-            {' '}只需 30 分钟
-          </h1>
+          {/* Right — App mockup */}
+          <div style={{ position: 'relative' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: 16, boxShadow: '0 24px 64px rgba(59,91,219,0.12), 0 4px 16px rgba(0,0,0,0.06)', overflow: 'hidden', border: `1px solid ${C.border}` }}>
+              {/* Window chrome */}
+              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#FF5F57', display: 'inline-block' }} />
+                <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#FEBC2E', display: 'inline-block' }} />
+                <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#28C840', display: 'inline-block' }} />
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 600 }}>AI 写作助手</span>
+                </div>
+              </div>
 
-          {/* Sub-copy：解决什么 + 比手动强在哪 */}
-          <p
-            className="max-w-2xl mx-auto mb-4"
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: '1.125rem',
-              lineHeight: 1.8,
-              color: 'var(--color-ink-secondary)',
-              fontWeight: 300,
-            }}
-          >
-            标题选题 → 结构化大纲 → Multi-Agent 全文生成 → SEO 优化，
-            <br />
-            一套 AI 工作流替代手动写作 75% 的时间消耗。
-          </p>
-          <p
-            className="max-w-xl mx-auto mb-10 text-sm"
-            style={{
-              color: 'var(--color-ink-faint)',
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.02em',
-            }}
-          >
-            减少 70% 的大纲返工 · 告别空白页焦虑 · 保留你的写作风格
-          </p>
+              <div style={{ height: 340, backgroundColor: '#F8FAFF', position: 'relative' }}>
+                <Image
+                  src="/project-screenshot.png"
+                  alt="AI写作助手项目界面截图"
+                  fill
+                  sizes="(min-width: 1200px) 560px, 100vw"
+                  priority
+                  style={{ objectFit: 'cover', objectPosition: 'top left' }}
+                />
+              </div>
 
-          {/* CTA row */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <SignedOut>
-              <SignUpButton mode="modal">
-                <button className="btn-primary">
-                  免费试用 — 无需信用卡
-                </button>
-              </SignUpButton>
-              <Link
-                href="/demo"
-                className="btn-ghost"
-                style={{ display: 'inline-block' }}
-              >
-                查看 30 秒演示 →
-              </Link>
-            </SignedOut>
-            <SignedIn>
-              <Link href="/dashboard" className="btn-primary">
-                进入工作台
-              </Link>
-              <Link
-                href="/demo"
-                className="btn-ghost"
-                style={{ display: 'inline-block' }}
-              >
-                查看演示 →
-              </Link>
-            </SignedIn>
+              <div style={{ display: 'none', height: 340 }}>
+                {/* Sidebar */}
+                <div style={{ width: 140, borderRight: `1px solid ${C.border}`, padding: '16px 0', flexShrink: 0 }}>
+                  <div style={{ padding: '0 12px', marginBottom: 8 }}>
+                    <div style={{ backgroundColor: C.blue, color: 'white', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>✏️</span> 新建写作
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 13 }}>🖥️</span>
+                    <span style={{ fontSize: 12, color: C.textSub, fontWeight: 500 }}>工作台</span>
+                  </div>
+                  <div style={{ padding: '4px 12px 8px', fontSize: 11, color: C.textMuted, fontWeight: 600, marginTop: 8 }}>文档</div>
+                  {['全部文档', '最近使用', '收藏夹', '回收站'].map((item) => (
+                    <div key={item} style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 11 }}>📁</span>
+                      <span style={{ fontSize: 12, color: C.textSub }}>{item}</span>
+                    </div>
+                  ))}
+                  <div style={{ padding: '4px 12px 4px', fontSize: 11, color: C.textMuted, fontWeight: 600, marginTop: 8 }}>工具</div>
+                  <div style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11 }}>🎨</span>
+                    <span style={{ fontSize: 12, color: C.textSub }}>模板中心</span>
+                  </div>
+                  <div style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11 }}>🤖</span>
+                    <span style={{ fontSize: 12, color: C.textSub }}>AI 工具箱</span>
+                  </div>
+                </div>
+
+                {/* Main content */}
+                <div style={{ flex: 1, padding: '20px 20px 16px', overflow: 'hidden' }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 14, color: C.text }}>你想写什么？</h3>
+                  {/* Input */}
+                  <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 14px', marginBottom: 10, backgroundColor: '#FAFBFF' }}>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 24 }}>告诉 AI 你的想法，或选择一个模板开始…</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        {['文章', '邮件', '文案', '大纲', '… 更多'].map((t) => (
+                          <span key={t} style={{ fontSize: 11, color: C.textSub, backgroundColor: C.bg, borderRadius: 6, padding: '3px 8px', border: `1px solid ${C.border}` }}>{t}</span>
+                        ))}
+                      </div>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13 }}>→</div>
+                    </div>
+                  </div>
+
+                  {/* Templates */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>推荐模板</span>
+                    <span style={{ fontSize: 12, color: C.blue, cursor: 'pointer' }}>查看更多 &gt;</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                    {templates.map((t) => (
+                      <div key={t.title} style={{ backgroundColor: C.bg, borderRadius: 8, padding: '10px 10px', border: `1px solid ${C.border}` }}>
+                        <span style={{ fontSize: 16, display: 'block', marginBottom: 4 }}>{t.icon}</span>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{t.title}</div>
+                        <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2 }}>{t.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Micro-copy */}
-          <p
-            className="mt-5 text-xs"
-            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-faint)', letterSpacing: '0.06em' }}
-          >
-            Free 版每月赠送 30,000 tokens · 完整体验全部功能 · 不满意随时停用
-          </p>
+        </div>
+      </section>
 
-          {/* Stats row */}
-          <div className="mt-16 pt-10 border-t flex flex-col sm:flex-row items-center justify-center gap-0">
-            {stats.map((s, i) => (
-              <div key={s.label} className="flex items-center">
-                {i > 0 && (
-                  <div
-                    className="hidden sm:block w-px h-10 mx-10"
-                    style={{ backgroundColor: 'var(--color-ivory-border)' }}
-                  />
-                )}
-                <div className="text-center">
-                  <div className="stat-number">{s.num}</div>
-                  <div
-                    className="mt-1 text-xs uppercase tracking-widest"
-                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
-                  >
-                    {s.label}
+      {/* ══ TESTIMONIALS ══════════════════════════════════════ */}
+      <section style={{ backgroundColor: 'white', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 28, fontWeight: 700, color: C.text }}>
+              被超过 <span style={{ color: C.blue }}>10,000+</span> 用户信赖的 AI 写作助手
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            {testimonials.map((t) => (
+              <div key={t.name} style={{ backgroundColor: C.bg, borderRadius: 16, padding: '28px 28px 24px', border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 32, color: C.blue, opacity: 0.25, lineHeight: 1, marginBottom: 16, fontFamily: 'Georgia, serif' }}>&ldquo;</div>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: C.textSub, marginBottom: 24 }}>{t.content}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: C.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.avatar}</div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{t.role}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
+      {/* ══ STATS ═════════════════════════════════════════════ */}
+      <section style={{ backgroundColor: C.bg, padding: '60px 24px', borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
+          {statsRow.map((s, i) => (
+            <div key={s.label} style={{ textAlign: 'center', padding: '0 24px', borderLeft: i > 0 ? `1px solid ${C.border}` : 'none' }}>
+              <div style={{ fontSize: 28, marginBottom: 8, color: C.blue }}>{s.icon}</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: C.blue, letterSpacing: '-0.02em' }}>{s.num}</div>
+              <div style={{ fontSize: 14, color: C.textMuted, marginTop: 6 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ══ FEATURES ══════════════════════════════════════════ */}
-      <section
-        id="features"
-        style={{ backgroundColor: 'var(--color-surface)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-6xl mx-auto px-6 md:px-10">
-
-          {/* Section header */}
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">核心功能</span>
+      <section id="features" style={{ backgroundColor: 'white', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>核心功能</span>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              一套工作流，覆盖创作全程
-            </h2>
-            <p
-              className="mt-4 max-w-lg mx-auto"
-              style={{ color: 'var(--color-ink-muted)', lineHeight: 1.8, fontWeight: 300 }}
-            >
-              从标题选题到 SEO 优化，每个卡点都有 AI 接管，
-              你只需要把控方向和最终表达。
-            </p>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text, marginBottom: 12 }}>一套工作流，覆盖创作全程</h2>
+            <p style={{ fontSize: 15, color: C.textSub, maxWidth: 480, margin: '0 auto' }}>从标题选题到 SEO 优化，每个卡点都有 AI 接管，你只需要把控方向和最终表达。</p>
           </div>
-
-          {/* Feature grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px"
-            style={{ backgroundColor: 'var(--color-ivory-border)' }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
             {features.map((f) => (
-              <div key={f.title} className="feature-card">
-                <div
-                  className="mb-4 text-xs uppercase tracking-widest"
-                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-gold)' }}
-                >
-                  {f.label}
-                </div>
-                <h3
-                  className="mb-3"
-                  style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-ink)' }}
-                >
-                  {f.title}
-                </h3>
-                <p style={{ color: 'var(--color-ink-secondary)', lineHeight: 1.75, fontSize: '0.9375rem', fontWeight: 300 }}>
-                  {f.desc}
-                </p>
+              <div key={f.title} style={{ backgroundColor: C.bg, borderRadius: 14, padding: '28px 24px', border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>{f.label}</div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 10 }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: C.textSub, lineHeight: 1.75 }}>{f.desc}</p>
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
       {/* ══ HOW IT WORKS ══════════════════════════════════════ */}
-      <section
-        id="how-it-works"
-        style={{ backgroundColor: 'var(--color-ivory)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-5xl mx-auto px-6 md:px-10">
-
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">使用流程</span>
+      <section id="how-it-works" style={{ backgroundColor: C.bg, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>使用流程</span>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              四步，写完一篇博客
-            </h2>
-            <p
-              className="mt-4"
-              style={{ color: 'var(--color-ink-muted)', fontWeight: 300 }}
-            >
-              不需要学习成本，打开就能用
-            </p>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text, marginBottom: 12 }}>四步，写完一篇博客</h2>
+            <p style={{ fontSize: 15, color: C.textSub }}>不需要学习成本，打开就能用</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-0">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
             {steps.map((s, i) => (
-              <div
-                key={s.title}
-                className="relative px-6 py-8 text-center"
-                style={{
-                  borderLeft: i > 0 ? '1px solid var(--color-ivory-border)' : 'none',
-                }}
-              >
-                {/* Large italic ordinal */}
-                <div className="step-number mb-2">
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-                <h3
-                  className="mb-2"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '1.125rem',
-                    color: 'var(--color-ink)',
-                    fontWeight: 600,
-                  }}
-                >
-                  {s.title}
-                </h3>
-                <p style={{ color: 'var(--color-ink-muted)', fontSize: '0.875rem', lineHeight: 1.7, fontWeight: 300 }}>
-                  {s.desc}
-                </p>
+              <div key={s.title} style={{ textAlign: 'center', padding: '24px 20px', borderLeft: i > 0 ? `1px solid ${C.border}` : 'none' }}>
+                <div style={{ fontSize: 36, fontWeight: 800, color: C.blue, opacity: 0.15, lineHeight: 1, marginBottom: 12 }}>{String(i + 1).padStart(2, '0')}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 8 }}>{s.title}</h3>
+                <p style={{ fontSize: 13, color: C.textSub, lineHeight: 1.7 }}>{s.desc}</p>
               </div>
             ))}
           </div>
-
-          {/* Demo CTA */}
-          <div className="mt-12 text-center">
-            <Link
-              href="/demo"
-              className="btn-ghost"
-              style={{ display: 'inline-block' }}
-            >
+          <div style={{ textAlign: 'center', marginTop: 36 }}>
+            <Link href="/demo" style={{ fontSize: 14, color: C.blue, fontWeight: 600, textDecoration: 'none' }}>
               立即体验 30 秒交互演示 →
             </Link>
           </div>
-
         </div>
       </section>
 
       {/* ══ BEFORE / AFTER ════════════════════════════════════ */}
-      <section
-        style={{ backgroundColor: 'var(--color-surface)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-5xl mx-auto px-6 md:px-10">
-
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">效率对比</span>
+      <section style={{ backgroundColor: 'white', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>效率对比</span>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              手动写作 vs AI 辅助写作
-            </h2>
-            <p
-              className="mt-4"
-              style={{ color: 'var(--color-ink-muted)', fontWeight: 300 }}
-            >
-              数据来自内测用户反馈，实际效果因写作习惯和主题复杂度有所不同
-            </p>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text, marginBottom: 12 }}>手动写作 vs AI 辅助写作</h2>
+            <p style={{ fontSize: 14, color: C.textMuted }}>数据来自内测用户反馈，实际效果因写作习惯和主题复杂度有所不同</p>
           </div>
-
-          {/* Comparison table */}
-          <div style={{ border: '1px solid var(--color-ivory-border)' }}>
-            {/* Header */}
-            <div
-              className="grid grid-cols-4 text-center text-xs uppercase tracking-widest py-3"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                backgroundColor: 'var(--color-ivory)',
-                borderBottom: '1px solid var(--color-ivory-border)',
-                color: 'var(--color-ink-faint)',
-              }}
-            >
-              <div className="px-4 text-left">场景</div>
-              <div className="px-4" style={{ color: 'var(--color-ink-muted)' }}>手动写作</div>
-              <div className="px-4" style={{ color: 'var(--color-gold)' }}>AI 辅助</div>
-              <div className="px-4">节省</div>
+          <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', backgroundColor: C.bg, borderBottom: `1px solid ${C.border}`, padding: '12px 20px' }}>
+              {['场景', '手动写作', 'AI 辅助', '节省'].map((h, i) => (
+                <div key={h} style={{ fontSize: 12, fontWeight: 700, color: i === 2 ? C.blue : C.textMuted, textAlign: i > 0 ? 'center' : 'left' }}>{h}</div>
+              ))}
             </div>
-
             {comparisons.map((row, i) => (
-              <div
-                key={row.label}
-                className="grid grid-cols-4 items-center text-center py-5"
-                style={{
-                  borderTop: i > 0 ? '1px solid var(--color-ivory-border)' : 'none',
-                  backgroundColor: i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-ivory)',
-                }}
-              >
-                <div
-                  className="px-4 text-left text-sm"
-                  style={{ color: 'var(--color-ink-secondary)', fontWeight: 300 }}
-                >
-                  {row.label}
-                </div>
-                <div
-                  className="px-4 text-sm line-through"
-                  style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
-                >
-                  {row.before}
-                </div>
-                <div
-                  className="px-4 text-sm font-medium"
-                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
-                >
-                  {row.after}
-                </div>
-                <div
-                  className="px-4 text-xs font-medium"
-                  style={{
-                    color: 'var(--color-gold)',
-                    fontFamily: 'var(--font-mono)',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  {row.saving}
-                </div>
+              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '16px 20px', borderTop: i > 0 ? `1px solid ${C.border}` : 'none', backgroundColor: i % 2 === 0 ? 'white' : C.bg }}>
+                <div style={{ fontSize: 14, color: C.textSub }}>{row.label}</div>
+                <div style={{ fontSize: 14, color: C.textMuted, textAlign: 'center', textDecoration: 'line-through' }}>{row.before}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.text, textAlign: 'center' }}>{row.after}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.blue, textAlign: 'center' }}>{row.saving}</div>
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
-      {/* ══ TESTIMONIALS ═════════════════════════════════════ */}
-      <section
-        style={{ backgroundColor: 'var(--color-ivory)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-6xl mx-auto px-6 md:px-10">
-
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">用户评价</span>
+      {/* ══ PRICING ═══════════════════════════════════════════ */}
+      <section id="pricing" style={{ backgroundColor: C.bg, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>价格方案</span>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              博主们都在说什么
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <div key={t.name} className="testimonial-card">
-                {/* Opening quote mark */}
-                <div
-                  className="mb-4 leading-none"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '3rem',
-                    color: 'var(--color-gold)',
-                    opacity: 0.3,
-                    lineHeight: 0.8,
-                  }}
-                >
-                  &ldquo;
-                </div>
-                <p
-                  className="mb-6"
-                  style={{
-                    color: 'var(--color-ink-secondary)',
-                    lineHeight: 1.8,
-                    fontSize: '0.9375rem',
-                    fontStyle: 'italic',
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: 400,
-                  }}
-                >
-                  {t.content}
-                </p>
-                <div className="rule-divider mb-4" />
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontWeight: 600,
-                      color: 'var(--color-ink)',
-                      fontSize: '0.9375rem',
-                    }}
-                  >
-                    {t.name}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.6875rem',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      color: 'var(--color-ink-faint)',
-                      marginTop: '0.25rem',
-                    }}
-                  >
-                    {t.role}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ══ PRICING ══════════════════════════════════════════ */}
-      <section
-        id="pricing"
-        style={{ backgroundColor: 'var(--color-surface)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-5xl mx-auto px-6 md:px-10">
-
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">价格方案</span>
-            </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              先体验，满意再升级
-            </h2>
-            <p
-              className="mt-4"
-              style={{ color: 'var(--color-ink-muted)', fontWeight: 300 }}
-            >
-              免费版功能完整，无试用期限制。
-            </p>
-            {/* 早鸟提示条 */}
-            <div
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2 text-xs"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-gold)',
-                color: 'var(--color-gold)',
-                letterSpacing: '0.04em',
-                backgroundColor: 'rgba(184,134,11,0.04)',
-              }}
-            >
-              <span>✦</span>
-              <span>早鸟计划开放中 · 现在锁定价格，正式上线后永久有效</span>
-              <span>✦</span>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text, marginBottom: 12 }}>先体验，满意再升级</h2>
+            <p style={{ fontSize: 15, color: C.textSub }}>免费版功能完整，无试用期限制。</p>
+            <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF9DB', border: '1px solid #E67700', borderRadius: 20, padding: '6px 16px' }}>
+              <span style={{ fontSize: 12, color: '#E67700', fontWeight: 600 }}>✦ 早鸟计划开放中 · 现在锁定价格，正式上线后永久有效 ✦</span>
             </div>
           </div>
 
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-0"
-            style={{ border: '1px solid var(--color-ivory-border)' }}
-          >
-            {plans.map((plan, i) => (
-              <div
-                key={plan.tier}
-                className="pricing-card relative"
-                style={{
-                  borderLeft: i > 0 ? '1px solid var(--color-ivory-border)' : 'none',
-                  backgroundColor: plan.featured ? 'var(--color-ink)' : 'var(--color-surface)',
-                  border: plan.featured ? '1px solid var(--color-ink)' : undefined,
-                  color: plan.featured ? 'var(--color-ivory)' : 'var(--color-ink)',
-                  marginTop: plan.featured ? '-1px' : undefined,
-                  marginBottom: plan.featured ? '-1px' : undefined,
-                }}
-              >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            {plans.map((plan) => (
+              <div key={plan.tier} style={{
+                backgroundColor: plan.featured ? C.blue : 'white',
+                borderRadius: 20,
+                padding: '32px 28px',
+                border: plan.featured ? 'none' : `1px solid ${C.border}`,
+                color: plan.featured ? 'white' : C.text,
+                position: 'relative',
+                boxShadow: plan.featured ? '0 16px 48px rgba(59,91,219,0.3)' : 'none',
+              }}>
                 {plan.featured && (
-                  <div
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-0.5 text-[10px] tracking-widest uppercase"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      backgroundColor: 'var(--color-gold)',
-                      color: 'white',
-                    }}
-                  >
+                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', backgroundColor: '#E67700', color: 'white', fontSize: 11, fontWeight: 700, borderRadius: 12, padding: '4px 14px', whiteSpace: 'nowrap' }}>
                     早鸟价 · 最受欢迎
                   </div>
                 )}
                 {!plan.featured && plan.earlyBird && (
-                  <div
-                    className="absolute -top-3 left-6 px-3 py-0.5 text-[10px] tracking-widest uppercase"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      border: '1px solid var(--color-gold)',
-                      color: 'var(--color-gold)',
-                      backgroundColor: 'var(--color-surface)',
-                    }}
-                  >
+                  <div style={{ display: 'inline-block', backgroundColor: '#FFF9DB', border: '1px solid #E67700', color: '#E67700', fontSize: 11, fontWeight: 700, borderRadius: 10, padding: '3px 10px', marginBottom: 12 }}>
                     早鸟价
                   </div>
                 )}
-
-                {/* Tier label */}
-                <div
-                  className="mb-1 text-[11px] uppercase tracking-widest"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    color: plan.featured ? 'rgba(250,250,248,0.5)' : 'var(--color-ink-faint)',
-                  }}
-                >
-                  {plan.tier}
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: plan.featured ? 'rgba(255,255,255,0.6)' : C.textMuted, marginBottom: 8 }}>{plan.tier}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 38, fontWeight: 800, letterSpacing: '-0.02em' }}>{plan.price}</span>
+                  <span style={{ fontSize: 14, opacity: 0.6 }}>{plan.period}</span>
+                  {plan.priceOriginal && <span style={{ fontSize: 14, opacity: 0.4, textDecoration: 'line-through' }}>{plan.priceOriginal}</span>}
                 </div>
-
-                {/* Price：当前价 + 划线原价 */}
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '2.25rem',
-                      fontWeight: 700,
-                      letterSpacing: '-0.02em',
-                      color: plan.featured ? 'var(--color-ivory)' : 'var(--color-ink)',
-                    }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.75rem',
-                      color: plan.featured ? 'rgba(250,250,248,0.45)' : 'var(--color-ink-faint)',
-                    }}
-                  >
-                    {plan.period}
-                  </span>
-                  {plan.priceOriginal && (
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.8125rem',
-                        color: plan.featured ? 'rgba(250,250,248,0.25)' : 'var(--color-ink-faint)',
-                        textDecoration: 'line-through',
-                      }}
-                    >
-                      {plan.priceOriginal}
-                    </span>
-                  )}
-                </div>
-
-                <p
-                  className="mb-6 text-sm"
-                  style={{ color: plan.featured ? 'rgba(250,250,248,0.6)' : 'var(--color-ink-muted)', fontWeight: 300 }}
-                >
-                  {plan.desc}
-                </p>
-
-                {/* Included features */}
-                <ul className="space-y-2.5 mb-4">
+                <p style={{ fontSize: 13, opacity: plan.featured ? 0.7 : undefined, color: plan.featured ? undefined : C.textSub, marginBottom: 24 }}>{plan.desc}</p>
+                <ul style={{ marginBottom: 16, listStyle: 'none', padding: 0 }}>
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2.5 text-sm">
-                      <span
-                        style={{
-                          color: plan.featured ? 'var(--color-gold-muted)' : 'var(--color-gold)',
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '0.75rem',
-                          marginTop: '0.1em',
-                          flexShrink: 0,
-                        }}
-                      >
-                        ✦
-                      </span>
-                      <span style={{ color: plan.featured ? 'rgba(250,250,248,0.8)' : 'var(--color-ink-secondary)', fontWeight: 300 }}>
-                        {feat}
-                      </span>
+                    <li key={feat} style={{ fontSize: 13, display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
+                      <span style={{ color: plan.featured ? '#90BFFF' : C.blue, flexShrink: 0, marginTop: 1 }}>✓</span>
+                      <span style={{ opacity: plan.featured ? 0.85 : undefined, color: plan.featured ? undefined : C.textSub }}>{feat}</span>
                     </li>
                   ))}
                 </ul>
-
-                {/* Not included */}
                 {plan.notIncluded.length > 0 && (
-                  <ul className="space-y-2 mb-8">
+                  <ul style={{ marginBottom: 28, listStyle: 'none', padding: 0 }}>
                     {plan.notIncluded.map((feat) => (
-                      <li key={feat} className="flex items-start gap-2.5 text-sm">
-                        <span
-                          style={{
-                            color: plan.featured ? 'rgba(250,250,248,0.2)' : 'var(--color-ink-faint)',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.75rem',
-                            marginTop: '0.1em',
-                            flexShrink: 0,
-                          }}
-                        >
-                          —
-                        </span>
-                        <span style={{ color: plan.featured ? 'rgba(250,250,248,0.3)' : 'var(--color-ink-faint)', fontWeight: 300, textDecoration: 'line-through' }}>
-                          {feat}
-                        </span>
+                      <li key={feat} style={{ fontSize: 13, display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
+                        <span style={{ opacity: 0.3, flexShrink: 0 }}>—</span>
+                        <span style={{ opacity: 0.3, textDecoration: 'line-through' }}>{feat}</span>
                       </li>
                     ))}
                   </ul>
                 )}
-                {plan.notIncluded.length === 0 && <div className="mb-8" />}
+                {plan.notIncluded.length === 0 && <div style={{ marginBottom: 28 }} />}
 
-                {/* CTA */}
                 {plan.ctaHref ? (
-                  <a
-                    href={plan.ctaHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full py-2.5 text-center text-[11px] tracking-widest uppercase transition-all"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      backgroundColor: plan.featured ? 'var(--color-gold)' : 'transparent',
-                      color: plan.featured ? 'white' : 'var(--color-ink)',
-                      border: plan.featured ? '1px solid var(--color-gold)' : '1px solid var(--color-ivory-border)',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {plan.cta}
-                  </a>
+                  <a href={plan.ctaHref} style={{
+                    display: 'block', textAlign: 'center', padding: '12px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none',
+                    backgroundColor: plan.featured ? 'white' : C.blue,
+                    color: plan.featured ? C.blue : 'white',
+                  }}>{plan.cta}</a>
                 ) : (
                   <>
                     <SignedOut>
                       <SignUpButton mode="modal">
-                        <button
-                          className="w-full py-2.5 text-[11px] tracking-widest uppercase transition-all"
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            backgroundColor: 'transparent',
-                            color: 'var(--color-ink)',
-                            border: '1px solid var(--color-ivory-border)',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {plan.cta}
-                        </button>
+                        <button style={{ display: 'block', width: '100%', textAlign: 'center', padding: '12px', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: `1px solid ${C.border}`, backgroundColor: C.bg, color: C.text }}>{plan.cta}</button>
                       </SignUpButton>
                     </SignedOut>
                     <SignedIn>
-                      <Link
-                        href="/dashboard"
-                        className="block w-full py-2.5 text-center text-[11px] tracking-widest uppercase transition-all"
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          backgroundColor: 'transparent',
-                          color: 'var(--color-ink)',
-                          border: '1px solid var(--color-ivory-border)',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        {plan.cta}
-                      </Link>
+                      <Link href="/dashboard" style={{ display: 'block', textAlign: 'center', padding: '12px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none', border: `1px solid ${C.border}`, backgroundColor: C.bg, color: C.text }}>{plan.cta}</Link>
                     </SignedIn>
                   </>
                 )}
               </div>
             ))}
           </div>
-
-          {/* Reassurance copy */}
-          <p
-            className="mt-6 text-center text-xs"
-            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-faint)', letterSpacing: '0.06em' }}
-          >
-            无需信用卡 · 随时停用 · 数据完整导出 · 不训练你的原创内容
-          </p>
-
+          <p style={{ textAlign: 'center', fontSize: 13, color: C.textMuted, marginTop: 24 }}>无需信用卡 · 随时停用 · 数据完整导出 · 不训练你的原创内容</p>
         </div>
       </section>
 
       {/* ══ FAQ ═══════════════════════════════════════════════ */}
-      <section
-        style={{ backgroundColor: 'var(--color-ivory)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-3xl mx-auto px-6 md:px-10">
-
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <span className="section-label">常见问题</span>
+      <section style={{ backgroundColor: 'white', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.blueLight, borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>常见问题</span>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
-              你可能想知道的
-            </h2>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text }}>你可能想知道的</h2>
           </div>
-
-          <div style={{ border: '1px solid var(--color-ivory-border)' }}>
+          <div style={{ borderRadius: 16, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
             {faqs.map((faq, i) => (
-              <div
-                key={faq.q}
-                className="px-8 py-7"
-                style={{
-                  borderTop: i > 0 ? '1px solid var(--color-ivory-border)' : 'none',
-                }}
-              >
-                <p
-                  className="mb-3 font-medium"
-                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-sans)', fontSize: '0.9375rem' }}
-                >
-                  {faq.q}
-                </p>
-                <p
-                  style={{
-                    color: 'var(--color-ink-muted)',
-                    fontSize: '0.875rem',
-                    lineHeight: 1.75,
-                    fontWeight: 300,
-                  }}
-                >
-                  {faq.a}
-                </p>
+              <div key={faq.q} style={{ padding: '24px 28px', borderTop: i > 0 ? `1px solid ${C.border}` : 'none' }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 8 }}>{faq.q}</p>
+                <p style={{ fontSize: 14, color: C.textSub, lineHeight: 1.75 }}>{faq.a}</p>
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
-      {/* ══ FINAL CTA ════════════════════════════════════════ */}
-      <section
-        style={{ backgroundColor: 'var(--color-ink)' }}
-        className="py-24 md:py-32"
-      >
-        <div className="max-w-3xl mx-auto px-6 md:px-10 text-center">
-
-          <div className="flex justify-center mb-8">
-            <span
-              className="text-[11px] uppercase tracking-widest"
-              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-gold-muted)' }}
-            >
-              开始创作
-            </span>
-          </div>
-
-          <h2
-            className="mb-6"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
-              fontWeight: 700,
-              color: 'var(--color-ivory)',
-              lineHeight: 1.2,
-            }}
-          >
-            下一篇博客，
-            <span style={{ fontStyle: 'italic', color: 'var(--color-gold)' }}>今天就写完</span>
+      {/* ══ FINAL CTA ═════════════════════════════════════════ */}
+      <section style={{ background: `linear-gradient(135deg, ${C.blue} 0%, ${C.blueMid} 100%)`, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 16 }}>
+            下一篇博客，<em style={{ fontStyle: 'normal', opacity: 0.85 }}>今天就写完</em>
           </h2>
-
-          <p
-            className="mb-4"
-            style={{ color: 'rgba(250,250,248,0.55)', fontSize: '1.125rem', fontWeight: 300 }}
-          >
-            免费开始，30 分钟从草稿到可发布内容。
-          </p>
-          <p
-            className="mb-10 text-sm"
-            style={{ color: 'rgba(250,250,248,0.3)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}
-          >
-            已有博主用这套工作流每周稳定输出 3 篇——你也可以
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', marginBottom: 32 }}>免费开始，30 分钟从草稿到可发布内容。</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
             <SignedOut>
               <SignUpButton mode="modal">
-                <button
-                  className="px-10 py-3 text-[11px] tracking-widest uppercase transition-all hover:opacity-90"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    backgroundColor: 'var(--color-gold)',
-                    color: 'white',
-                    border: '1px solid var(--color-gold)',
-                    cursor: 'pointer',
-                  }}
-                >
+                <button style={{ fontSize: 15, fontWeight: 700, backgroundColor: 'white', color: C.blue, border: 'none', borderRadius: 10, padding: '14px 32px', cursor: 'pointer' }}>
                   免费开始创作
                 </button>
               </SignUpButton>
-              <Link
-                href="/demo"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6875rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(250,250,248,0.45)',
-                  textDecoration: 'none',
-                }}
-              >
+              <Link href="/demo" style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.7)', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
                 先看演示 →
               </Link>
             </SignedOut>
             <SignedIn>
-              <Link
-                href="/dashboard"
-                className="inline-block px-10 py-3 text-[11px] tracking-widest uppercase transition-all hover:opacity-90"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  backgroundColor: 'var(--color-gold)',
-                  color: 'white',
-                  border: '1px solid var(--color-gold)',
-                }}
-              >
+              <Link href="/dashboard" style={{ fontSize: 15, fontWeight: 700, backgroundColor: 'white', color: C.blue, borderRadius: 10, padding: '14px 32px', textDecoration: 'none' }}>
                 进入工作台
               </Link>
             </SignedIn>
           </div>
-
-          <p
-            className="mt-6 text-xs"
-            style={{ fontFamily: 'var(--font-mono)', color: 'rgba(250,250,248,0.3)', letterSpacing: '0.06em' }}
-          >
-            无需信用卡 · Free 版 30,000 tokens / 月 · 随时取消
-          </p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 20 }}>无需信用卡 · Free 版 30,000 tokens / 月 · 随时取消</p>
         </div>
       </section>
 
-      {/* ══ SITE FOOTER ══════════════════════════════════════ */}
-      <footer style={{ backgroundColor: 'var(--color-ink)', color: 'var(--color-ivory-dark)' }}>
-        <div className="max-w-7xl mx-auto px-6 md:px-10 py-14">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <div>
-              <p style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-ivory)', marginBottom: '0.25rem' }}>
-                AI写作助手
-              </p>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--color-gold-muted)' }}>
-                专注中文内容创作
-              </p>
+      {/* ══ FOOTER ════════════════════════════════════════════ */}
+      <footer style={{ backgroundColor: '#111827', color: 'rgba(255,255,255,0.5)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 32 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, backgroundColor: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 13 }}>W</div>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'white' }}>AI 写作助手</span>
             </div>
-            <nav className="flex flex-wrap gap-6">
-              {[
-                { label: '功能', href: '#features' },
-                { label: '定价', href: '#pricing' },
-                { label: '演示', href: '/demo' },
-                { label: '隐私政策', href: '#' },
-                { label: '服务条款', href: '#' },
-              ].map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-ink-faint)', textDecoration: 'none' }}
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
+            <p style={{ fontSize: 13 }}>专注中文内容创作</p>
           </div>
-          <div className="mt-10 pt-6 border-t border-white/10">
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: 'var(--color-ink-faint)' }}>
-              © 2026 AI写作助手. All rights reserved.
-            </p>
-          </div>
+          <nav style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+            {[{ label: '功能', href: '#features' }, { label: '定价', href: '#pricing' }, { label: '演示', href: '/demo' }, { label: '隐私政策', href: '#' }, { label: '服务条款', href: '#' }].map(({ label, href }) => (
+              <a key={label} href={href} style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>{label}</a>
+            ))}
+          </nav>
+        </div>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '16px 24px', textAlign: 'center' }}>
+          <p style={{ fontSize: 12 }}>© 2026 AI写作助手. All rights reserved.</p>
         </div>
       </footer>
 
